@@ -23,4 +23,4 @@ The control system was developed through building several agri robots from Iseki
 | **Box 2** | Communication and Sensing | Typically used to add extra encoder channels, a small board computer (SBC) such as a Jetson Orin Nano, and a multi-camera deserialiser board. Enables communication with the Internet via 4G and supports multiple cameras for crop detection. |
 | **Safety Cameras** | AI Object Detection | A 3-camera set-up based on Raspberry Pis (one set at the front, one at the back). Uses Ai object detection to help the robot avoid collision with a large set of defined objects, especially people. |
 
-## ⚙️ Assembly Instructions: Please download the Instructions PDF here: 
+## ⚙️ Assembly Instructions: Please download the Instructions PDF here: [Assembly_instructions](https://github.com/paddygoat/WEEDINATOR_2026/blob/main/Instructions/Control_panel_assembly_instructions_01.pdf)
