@@ -27,7 +27,7 @@ The control system was developed through building several agri robots from Iseki
 
 Box 1 is the recommended starting point and should be viewed as a toolkit. The system is designed to enable small hydrostatically driven agricultural vehicles such as mowers and tractors to be controlled by RC (Radio Control) and 4G derived instructions by interacting with online databases.
 
-### 1. Base Board PCB (M0020A)
+### 1. Base Board PCB
 
 This board is the first in the stack and sits neatly in the bottom of the control panel enclosure. 
 
