@@ -6,7 +6,7 @@ The WEEDINATOR Control Hardware is a collection of customizable hardware units f
 
 The system is designed like an extremely sophisticated breadboard, where connections are mostly left unrouted, providing an almost infinite number of configuration options, just by connecting wires to the onboard WAGO spring lever terminal blocks.
 
-PCBs supplied by PCWay.
+Sponsored by PCBWay - the best quality and most reliable: https://www.pcbway.com/ . Other manufacturers exist, but we had quality issues with some of them.
 
 ## ✨ Key Features and Design Philosophy
 
