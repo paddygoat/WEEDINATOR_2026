@@ -1,0 +1,444 @@
+[29-Feb-2024 12:41:47 Europe/London] PHP Notice:  Undefined variable: time_stamp_previous in /home/paddygoat/public_html/weedinator/database/show_data.php on line 59
+[29-Feb-2024 12:41:47 Europe/London] PHP Notice:  Undefined variable: time_stamp in /home/paddygoat/public_html/weedinator/database/show_data.php on line 65
+[29-Feb-2024 12:41:47 Europe/London] PHP Notice:  Undefined variable: box_num in /home/paddygoat/public_html/weedinator/database/show_data.php on line 142
+[29-Feb-2024 12:41:47 Europe/London] PHP Notice:  Undefined variable: sig_str in /home/paddygoat/public_html/weedinator/database/show_data.php on line 143
+[29-Feb-2024 12:41:47 Europe/London] PHP Notice:  Undefined variable: CO_TWO in /home/paddygoat/public_html/weedinator/database/show_data.php on line 144
+[29-Feb-2024 12:42:47 Europe/London] PHP Notice:  Undefined variable: time_stamp_previous in /home/paddygoat/public_html/weedinator/database/show_data.php on line 59
+[29-Feb-2024 12:42:47 Europe/London] PHP Notice:  Undefined variable: time_stamp in /home/paddygoat/public_html/weedinator/database/show_data.php on line 65
+[29-Feb-2024 12:42:47 Europe/London] PHP Notice:  Undefined variable: box_num in /home/paddygoat/public_html/weedinator/database/show_data.php on line 142
+[29-Feb-2024 12:42:47 Europe/London] PHP Notice:  Undefined variable: sig_str in /home/paddygoat/public_html/weedinator/database/show_data.php on line 143
+[29-Feb-2024 12:42:47 Europe/London] PHP Notice:  Undefined variable: CO_TWO in /home/paddygoat/public_html/weedinator/database/show_data.php on line 144
+[29-Feb-2024 12:43:48 Europe/London] PHP Notice:  Undefined variable: time_stamp_previous in /home/paddygoat/public_html/weedinator/database/show_data.php on line 59
+[29-Feb-2024 12:43:48 Europe/London] PHP Notice:  Undefined variable: time_stamp in /home/paddygoat/public_html/weedinator/database/show_data.php on line 65
+[29-Feb-2024 12:43:48 Europe/London] PHP Notice:  Undefined variable: box_num in /home/paddygoat/public_html/weedinator/database/show_data.php on line 142
+[29-Feb-2024 12:43:48 Europe/London] PHP Notice:  Undefined variable: sig_str in /home/paddygoat/public_html/weedinator/database/show_data.php on line 143
+[29-Feb-2024 12:43:48 Europe/London] PHP Notice:  Undefined variable: CO_TWO in /home/paddygoat/public_html/weedinator/database/show_data.php on line 144
+[29-Feb-2024 12:43:50 Europe/London] PHP Notice:  Undefined variable: data in /home/paddygoat/public_html/weedinator/database/send.php on line 52
+[29-Feb-2024 13:20:23 Europe/London] PHP Notice:  Undefined index: lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[29-Feb-2024 13:20:23 Europe/London] PHP Notice:  Undefined index: lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[29-Feb-2024 13:20:47 Europe/London] PHP Notice:  Undefined index: lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[29-Feb-2024 13:20:47 Europe/London] PHP Notice:  Undefined index: lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[29-Feb-2024 13:43:10 Europe/London] PHP Notice:  Undefined variable: box_num in /home/paddygoat/public_html/weedinator/database/show_data.php on line 142
+[29-Feb-2024 13:43:10 Europe/London] PHP Notice:  Undefined variable: CO_TWO in /home/paddygoat/public_html/weedinator/database/show_data.php on line 144
+[29-Feb-2024 13:44:06 Europe/London] PHP Notice:  Undefined variable: box_num in /home/paddygoat/public_html/weedinator/database/show_data.php on line 142
+[29-Feb-2024 13:44:06 Europe/London] PHP Notice:  Undefined variable: CO_TWO in /home/paddygoat/public_html/weedinator/database/show_data.php on line 144
+[29-Feb-2024 13:44:08 Europe/London] PHP Notice:  Undefined variable: box_num in /home/paddygoat/public_html/weedinator/database/show_data.php on line 142
+[29-Feb-2024 13:44:08 Europe/London] PHP Notice:  Undefined variable: CO_TWO in /home/paddygoat/public_html/weedinator/database/show_data.php on line 144
+[29-Feb-2024 13:45:09 Europe/London] PHP Notice:  Undefined variable: box_num in /home/paddygoat/public_html/weedinator/database/show_data.php on line 142
+[29-Feb-2024 13:45:09 Europe/London] PHP Notice:  Undefined variable: CO_TWO in /home/paddygoat/public_html/weedinator/database/show_data.php on line 144
+[29-Feb-2024 13:46:10 Europe/London] PHP Notice:  Undefined variable: box_num in /home/paddygoat/public_html/weedinator/database/show_data.php on line 142
+[29-Feb-2024 13:46:10 Europe/London] PHP Notice:  Undefined variable: CO_TWO in /home/paddygoat/public_html/weedinator/database/show_data.php on line 144
+[04-Mar-2024 12:30:28 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[04-Mar-2024 12:30:28 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[04-Mar-2024 12:30:28 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[04-Mar-2024 12:30:28 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[04-Mar-2024 12:30:28 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[04-Mar-2024 12:30:28 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[04-Mar-2024 12:30:28 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[04-Mar-2024 12:30:28 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[04-Mar-2024 12:30:28 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 11:40:51 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 11:40:51 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 11:40:51 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 11:40:51 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 11:40:51 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 11:40:51 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 11:40:51 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 11:40:51 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 11:40:51 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 11:41:03 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 11:41:03 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 11:41:03 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 11:41:03 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 11:41:03 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 11:41:03 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 11:41:03 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 11:41:03 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 11:41:03 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 11:53:50 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 11:53:50 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 11:53:50 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 11:53:50 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 11:53:50 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 11:53:50 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 11:53:50 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 11:53:50 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 11:53:50 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 11:53:52 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 11:53:52 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 11:53:52 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 11:53:52 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 11:53:52 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 11:53:52 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 11:53:52 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 11:53:52 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 11:53:52 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 11:53:53 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 11:53:53 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 11:53:53 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 11:53:53 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 11:53:53 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 11:53:53 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 11:53:53 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 11:53:53 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 11:53:53 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 11:54:04 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 11:54:04 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 11:54:04 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 11:54:04 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 11:54:04 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 11:54:04 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 11:54:04 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 11:54:04 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 11:54:04 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 11:54:11 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 11:54:11 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 11:54:11 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 11:54:11 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 11:54:11 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 11:54:11 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 11:54:11 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 11:54:11 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 11:54:11 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 11:54:14 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 11:54:14 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 11:54:14 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 11:54:14 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 11:54:14 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 11:54:14 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 11:54:14 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 11:54:14 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 11:54:14 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:16:52 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:16:52 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:16:52 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:16:52 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:16:52 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:16:52 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:16:52 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:16:52 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:16:52 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:16:53 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:16:53 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:16:53 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:16:53 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:16:53 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:16:53 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:16:53 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:16:53 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:16:53 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:16:54 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:16:54 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:16:54 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:16:54 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:16:54 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:16:54 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:16:54 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:16:54 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:16:54 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:16:55 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:16:55 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:16:55 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:16:55 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:16:55 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:16:55 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:16:55 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:16:55 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:16:55 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:16:56 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:16:56 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:16:56 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:16:56 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:16:56 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:16:56 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:16:56 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:16:56 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:16:56 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:16:57 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:16:57 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:16:57 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:16:57 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:16:57 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:16:57 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:16:57 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:16:57 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:16:57 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:27:17 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:27:17 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:27:17 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:27:17 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:27:17 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:27:17 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:27:17 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:27:17 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:27:17 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:27:20 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:27:20 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:27:20 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:27:20 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:27:20 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:27:20 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:27:20 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:27:20 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:27:20 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:27:27 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:27:27 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:27:27 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:27:27 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:27:27 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:27:27 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:27:27 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:27:27 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:27:27 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:29:34 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:29:34 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:29:34 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:29:34 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:29:34 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:29:34 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:29:34 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:29:34 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:29:34 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 59
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 60
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_steer_angle in /home/paddygoat/public_html/weedinator/database/send.php on line 61
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_throtA_val in /home/paddygoat/public_html/weedinator/database/send.php on line 62
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 63
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: sig_str in /home/paddygoat/public_html/weedinator/database/send.php on line 64
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: box_num in /home/paddygoat/public_html/weedinator/database/send.php on line 65
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: CO_TWO in /home/paddygoat/public_html/weedinator/database/send.php on line 66
+[05-Mar-2024 12:29:36 Europe/London] PHP Notice:  Undefined index: operator in /home/paddygoat/public_html/weedinator/database/send.php on line 67
+[21-Apr-2024 13:24:56 Europe/London] PHP Notice:  Undefined index: data in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 5
+[21-Apr-2024 13:32:38 Europe/London] PHP Notice:  Undefined index: data in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 5
+[21-Apr-2024 13:50:57 Europe/London] PHP Warning:  mysql_fetch_array() expects parameter 1 to be resource, boolean given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 23
+[21-Apr-2024 13:50:57 Europe/London] PHP Notice:  Undefined variable: time_stamp in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 13:50:57 Europe/London] PHP Notice:  Undefined variable: id in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 47
+[21-Apr-2024 13:50:57 Europe/London] PHP Notice:  Undefined variable: act_lat in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 49
+[21-Apr-2024 13:50:57 Europe/London] PHP Notice:  Undefined variable: act_lon in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 50
+[21-Apr-2024 13:50:57 Europe/London] PHP Notice:  Undefined variable: act_heading in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 51
+[21-Apr-2024 13:50:57 Europe/London] PHP Notice:  Undefined variable: act_steer_angle in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 52
+[21-Apr-2024 13:50:57 Europe/London] PHP Notice:  Undefined variable: act_throtA_val in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 53
+[21-Apr-2024 13:50:57 Europe/London] PHP Notice:  Undefined variable: sig_str in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 54
+[21-Apr-2024 13:50:57 Europe/London] PHP Notice:  Undefined variable: GSM_session_num in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 55
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysqli_query() expects at least 2 parameters, 1 given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 41
+[21-Apr-2024 14:21:05 Europe/London] PHP Notice:  Undefined index: des_lat in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 50
+[21-Apr-2024 14:21:05 Europe/London] PHP Notice:  Undefined index: des_lon in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 51
+[21-Apr-2024 14:21:05 Europe/London] PHP Notice:  Undefined variable: dbhandle in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 52
+[21-Apr-2024 14:21:05 Europe/London] PHP Warning:  mysql_query() expects parameter 2 to be resource, null given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 52
+[21-Apr-2024 14:22:27 Europe/London] PHP Notice:  Undefined index: des_lat in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 50
+[21-Apr-2024 14:22:27 Europe/London] PHP Notice:  Undefined index: des_lon in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 51
+[21-Apr-2024 14:22:27 Europe/London] PHP Notice:  Undefined variable: dbhandle in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 52
+[21-Apr-2024 14:22:27 Europe/London] PHP Warning:  mysql_query() expects parameter 2 to be resource, null given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 52
+[21-Apr-2024 18:47:56 Europe/London] PHP Notice:  Undefined index: GSM_session_data in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 5
+[22-Apr-2024 12:58:47 Europe/London] PHP Notice:  Undefined index: GSM_session_num in /home/paddygoat/public_html/weedinator/database/send.php on line 70
+[22-Apr-2024 12:58:47 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 71
+[22-Apr-2024 12:58:47 Europe/London] PHP Notice:  Undefined index: timeSinceLastGPSFix in /home/paddygoat/public_html/weedinator/database/send.php on line 72
+[22-Apr-2024 12:59:03 Europe/London] PHP Notice:  Undefined index: GSM_session_num in /home/paddygoat/public_html/weedinator/database/send.php on line 70
+[22-Apr-2024 12:59:03 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 71
+[22-Apr-2024 12:59:03 Europe/London] PHP Notice:  Undefined index: timeSinceLastGPSFix in /home/paddygoat/public_html/weedinator/database/send.php on line 72
+[22-Apr-2024 12:59:20 Europe/London] PHP Notice:  Undefined index: GSM_session_num in /home/paddygoat/public_html/weedinator/database/send.php on line 70
+[22-Apr-2024 12:59:20 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 71
+[22-Apr-2024 12:59:20 Europe/London] PHP Notice:  Undefined index: timeSinceLastGPSFix in /home/paddygoat/public_html/weedinator/database/send.php on line 72
+[22-Apr-2024 12:59:36 Europe/London] PHP Notice:  Undefined index: GSM_session_num in /home/paddygoat/public_html/weedinator/database/send.php on line 70
+[22-Apr-2024 12:59:36 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 71
+[22-Apr-2024 12:59:36 Europe/London] PHP Notice:  Undefined index: timeSinceLastGPSFix in /home/paddygoat/public_html/weedinator/database/send.php on line 72
+[22-Apr-2024 13:45:35 Europe/London] PHP Notice:  Undefined index: GSM_session_num in /home/paddygoat/public_html/weedinator/database/send.php on line 78
+[22-Apr-2024 13:45:35 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 79
+[22-Apr-2024 13:45:35 Europe/London] PHP Notice:  Undefined index: timeSinceLastGPSFix in /home/paddygoat/public_html/weedinator/database/send.php on line 80
+[24-Apr-2024 15:12:35 Europe/London] PHP Notice:  Undefined index: GSM_session_data in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 5
+[24-Apr-2024 15:12:35 Europe/London] PHP Warning:  mysql_fetch_array() expects parameter 1 to be resource, boolean given in /home/paddygoat/public_html/weedinator/database/test_apr_21.php on line 36
+[30-Apr-2024 09:43:09 Europe/London] PHP Notice:  Undefined variable: result in /home/paddygoat/public_html/weedinator/database/control_01.php on line 33
+[30-Apr-2024 09:43:12 Europe/London] PHP Notice:  Undefined variable: result in /home/paddygoat/public_html/weedinator/database/control_01.php on line 33
+[30-Apr-2024 09:43:15 Europe/London] PHP Notice:  Undefined variable: result in /home/paddygoat/public_html/weedinator/database/control_01.php on line 33
+[30-Apr-2024 10:21:06 Europe/London] PHP Notice:  Undefined index: GSM_session_data in /home/paddygoat/public_html/weedinator/database/control_01.php on line 5
+[30-Apr-2024 10:28:39 Europe/London] PHP Notice:  Undefined index: GSM_session_data in /home/paddygoat/public_html/weedinator/database/control_01.php on line 21
+[30-Apr-2024 11:45:17 Europe/London] PHP Warning:  mysql_query() [<a href='function.mysql-query'>function.mysql-query</a>]: Access denied for user 'paddygoat'@'localhost' (using password: NO) in /home/paddygoat/public_html/weedinator/database/control_01.php on line 21
+[30-Apr-2024 11:45:17 Europe/London] PHP Warning:  mysql_query() [<a href='function.mysql-query'>function.mysql-query</a>]: A link to the server could not be established in /home/paddygoat/public_html/weedinator/database/control_01.php on line 21
+[30-Apr-2024 11:47:04 Europe/London] PHP Warning:  mysql_query() [<a href='function.mysql-query'>function.mysql-query</a>]: Access denied for user 'paddygoat'@'localhost' (using password: NO) in /home/paddygoat/public_html/weedinator/database/control_01.php on line 21
+[30-Apr-2024 11:47:04 Europe/London] PHP Warning:  mysql_query() [<a href='function.mysql-query'>function.mysql-query</a>]: A link to the server could not be established in /home/paddygoat/public_html/weedinator/database/control_01.php on line 21
+[30-Apr-2024 11:47:09 Europe/London] PHP Warning:  mysql_query() [<a href='function.mysql-query'>function.mysql-query</a>]: Access denied for user 'paddygoat'@'localhost' (using password: NO) in /home/paddygoat/public_html/weedinator/database/control_01.php on line 21
+[30-Apr-2024 11:47:09 Europe/London] PHP Warning:  mysql_query() [<a href='function.mysql-query'>function.mysql-query</a>]: A link to the server could not be established in /home/paddygoat/public_html/weedinator/database/control_01.php on line 21
+[30-Apr-2024 11:50:07 Europe/London] PHP Parse error:  syntax error, unexpected '"' in /home/paddygoat/public_html/weedinator/database/control_01.php on line 18
+[30-Apr-2024 12:12:03 Europe/London] PHP Parse error:  syntax error, unexpected T_TRY, expecting ',' or ';' in /home/paddygoat/public_html/weedinator/database/control_01.php on line 29
+[30-Apr-2024 12:17:08 Europe/London] PHP Notice:  Undefined variable: insert_query in /home/paddygoat/public_html/weedinator/database/control_01.php on line 41
+[02-May-2024 09:50:06 Europe/London] PHP Parse error:  syntax error, unexpected T_VARIABLE in /home/paddygoat/public_html/weedinator/database/test_may_2.php on line 5
+[02-May-2024 09:50:53 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/test_may_2.php on line 5
+[27-Jul-2025 19:07:29 Europe/London] PHP Parse error:  syntax error, unexpected T_STRING in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[27-Jul-2025 19:07:40 Europe/London] PHP Parse error:  syntax error, unexpected T_STRING in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[27-Jul-2025 19:07:51 Europe/London] PHP Parse error:  syntax error, unexpected T_STRING in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[27-Jul-2025 19:14:19 Europe/London] PHP Parse error:  syntax error, unexpected T_STRING in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[27-Jul-2025 19:14:31 Europe/London] PHP Parse error:  syntax error, unexpected T_STRING in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[27-Jul-2025 19:14:42 Europe/London] PHP Parse error:  syntax error, unexpected T_STRING in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[27-Jul-2025 19:20:26 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[27-Jul-2025 19:20:37 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[30-Jul-2025 10:54:33 Europe/London] PHP Warning:  mysqli_connect() [<a href='function.mysqli-connect'>function.mysqli-connect</a>]: (28000/1045): Access denied for user 'username'@'localhost' (using password: YES) in /home/paddygoat/public_html/weedinator/database/show_data_simple.php on line 12
+[30-Jul-2025 13:28:18 Europe/London] PHP Notice:  Undefined variable: con in /home/paddygoat/public_html/weedinator/database/show_data_simple_02.php on line 33
+[30-Jul-2025 13:28:18 Europe/London] PHP Warning:  mysqli_query() expects parameter 1 to be mysqli, null given in /home/paddygoat/public_html/weedinator/database/show_data_simple_02.php on line 33
+[30-Jul-2025 13:28:18 Europe/London] PHP Notice:  Undefined variable: con in /home/paddygoat/public_html/weedinator/database/show_data_simple_02.php on line 46
+[30-Jul-2025 13:28:18 Europe/London] PHP Warning:  mysqli_error() expects parameter 1 to be mysqli, null given in /home/paddygoat/public_html/weedinator/database/show_data_simple_02.php on line 46
+[30-Jul-2025 13:28:18 Europe/London] PHP Warning:  mysql_close(): no MySQL-Link resource supplied in /home/paddygoat/public_html/weedinator/database/show_data_simple_02.php on line 50
+[31-Jul-2025 11:36:36 Europe/London] PHP Notice:  Undefined variable: ID_to_value in /home/paddygoat/public_html/weedinator/database/show_data_simple_02.php on line 43
+[05-Aug-2025 13:46:24 Europe/London] PHP Warning:  mysql_close(): no MySQL-Link resource supplied in /home/paddygoat/public_html/weedinator/database/create_table.php on line 171
+[06-Aug-2025 12:09:27 Europe/London] PHP Parse error:  syntax error, unexpected '[' in /home/paddygoat/public_html/weedinator/database/create_table.php on line 162
+[06-Aug-2025 12:22:00 Europe/London] PHP Parse error:  syntax error, unexpected T_ECHO, expecting T_CATCH in /home/paddygoat/public_html/weedinator/database/create_table.php on line 130
+[06-Aug-2025 12:23:37 Europe/London] PHP Notice:  Undefined variable: mydata in /home/paddygoat/public_html/weedinator/database/create_table.php on line 134
+[06-Aug-2025 12:23:37 Europe/London] PHP Notice:  Undefined variable: mydata in /home/paddygoat/public_html/weedinator/database/create_table.php on line 145
+[06-Aug-2025 12:23:37 Europe/London] PHP Fatal error:  Call to undefined function json_last_error_msg() in /home/paddygoat/public_html/weedinator/database/create_table.php on line 198
+[06-Aug-2025 12:27:26 Europe/London] PHP Notice:  Undefined variable: mydata in /home/paddygoat/public_html/weedinator/database/create_table.php on line 130
+[06-Aug-2025 12:27:26 Europe/London] PHP Notice:  Undefined variable: mydata in /home/paddygoat/public_html/weedinator/database/create_table.php on line 140
+[06-Aug-2025 12:27:26 Europe/London] PHP Fatal error:  Call to undefined function json_last_error_msg() in /home/paddygoat/public_html/weedinator/database/create_table.php on line 193
+[06-Aug-2025 12:33:36 Europe/London] PHP Notice:  Undefined variable: mydata in /home/paddygoat/public_html/weedinator/database/create_table.php on line 145
+[06-Aug-2025 12:33:36 Europe/London] PHP Fatal error:  Call to undefined function json_last_error_msg() in /home/paddygoat/public_html/weedinator/database/create_table.php on line 199
+[06-Aug-2025 12:39:50 Europe/London] PHP Parse error:  syntax error, unexpected $end in /home/paddygoat/public_html/weedinator/database/create_table.php on line 280
+[06-Aug-2025 13:08:54 Europe/London] PHP Notice:  Undefined variable: mydata in /home/paddygoat/public_html/weedinator/database/create_table.php on line 141
+[06-Aug-2025 13:30:15 Europe/London] PHP Notice:  Undefined variable: myData in /home/paddygoat/public_html/weedinator/database/create_table.php on line 29
+[06-Aug-2025 13:30:15 Europe/London] PHP Notice:  Undefined variable: myData in /home/paddygoat/public_html/weedinator/database/create_table.php on line 29
+[06-Aug-2025 13:30:15 Europe/London] PHP Notice:  Undefined variable: myData in /home/paddygoat/public_html/weedinator/database/create_table.php on line 29
+[06-Aug-2025 13:30:15 Europe/London] PHP Notice:  Undefined variable: myData in /home/paddygoat/public_html/weedinator/database/create_table.php on line 29
+[06-Aug-2025 13:30:15 Europe/London] PHP Notice:  Undefined variable: myData in /home/paddygoat/public_html/weedinator/database/create_table.php on line 29
+[06-Aug-2025 13:30:15 Europe/London] PHP Notice:  Undefined variable: myData in /home/paddygoat/public_html/weedinator/database/create_table.php on line 29
+[06-Aug-2025 13:30:15 Europe/London] PHP Notice:  Undefined variable: myData in /home/paddygoat/public_html/weedinator/database/create_table.php on line 29
+[06-Aug-2025 13:30:15 Europe/London] PHP Notice:  Undefined variable: myData in /home/paddygoat/public_html/weedinator/database/create_table.php on line 29
+[06-Aug-2025 13:30:15 Europe/London] PHP Notice:  Undefined variable: mydata in /home/paddygoat/public_html/weedinator/database/create_table.php on line 141
+[06-Aug-2025 13:41:53 Europe/London] PHP Notice:  Undefined variable: mydata in /home/paddygoat/public_html/weedinator/database/create_table.php on line 176
+[06-Aug-2025 13:43:27 Europe/London] PHP Notice:  Undefined variable: coords_data in /home/paddygoat/public_html/weedinator/database/create_table.php on line 176
+[08-Aug-2025 13:11:49 Europe/London] PHP Parse error:  syntax error, unexpected '}', expecting T_CATCH in /home/paddygoat/public_html/weedinator/database/des_coords.php on line 98
+[08-Aug-2025 13:12:50 Europe/London] PHP Parse error:  syntax error, unexpected '}', expecting T_CATCH in /home/paddygoat/public_html/weedinator/database/des_coords.php on line 98
+[08-Aug-2025 13:42:25 Europe/London] PHP Parse error:  syntax error, unexpected '}', expecting T_CATCH in /home/paddygoat/public_html/weedinator/database/des_coords.php on line 98
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 29
+[11-Aug-2025 10:27:49 Europe/London] PHP Notice:  Undefined variable: new_table_name in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 52
+[11-Aug-2025 10:29:42 Europe/London] PHP Notice:  Undefined property: PDO::$error in /home/paddygoat/public_html/weedinator/database/delete_table.php on line 47
+[11-Aug-2025 22:34:27 Europe/London] PHP Notice:  Undefined index: session in /home/paddygoat/public_html/weedinator/database/control_01.php on line 81
+[11-Aug-2025 22:34:27 Europe/London] PHP Notice:  Undefined index: abcdefg in /home/paddygoat/public_html/weedinator/database/control_01.php on line 82
+[11-Aug-2025 23:13:58 Europe/London] PHP Notice:  Undefined variable: dmyData in /home/paddygoat/public_html/weedinator/database/control_01.php on line 43
+[11-Aug-2025 23:13:58 Europe/London] PHP Notice:  Undefined variable: tableName in /home/paddygoat/public_html/weedinator/database/control_01.php on line 53
+[11-Aug-2025 23:13:58 Europe/London] PHP Notice:  Undefined variable: tableName in /home/paddygoat/public_html/weedinator/database/control_01.php on line 99
+[11-Aug-2025 23:14:49 Europe/London] PHP Notice:  Undefined variable: tableName in /home/paddygoat/public_html/weedinator/database/control_01.php on line 53
+[11-Aug-2025 23:14:49 Europe/London] PHP Notice:  Undefined variable: tableName in /home/paddygoat/public_html/weedinator/database/control_01.php on line 99
+[11-Aug-2025 23:36:23 Europe/London] PHP Parse error:  syntax error, unexpected '[', expecting ')' in /home/paddygoat/public_html/weedinator/database/control_01.php on line 47
+[11-Aug-2025 23:39:12 Europe/London] PHP Notice:  Undefined variable: tablename in /home/paddygoat/public_html/weedinator/database/control_01.php on line 36
+[18-Aug-2025 20:42:10 Europe/London] PHP Notice:  Undefined variable: throttBVal in /home/paddygoat/public_html/weedinator/database/control_01.php on line 57
+[18-Aug-2025 20:44:09 Europe/London] PHP Notice:  Undefined variable: throttAVal in /home/paddygoat/public_html/weedinator/database/control_01.php on line 57
+[20-Aug-2025 12:37:55 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[20-Aug-2025 12:38:01 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 83
+[21-Aug-2025 12:12:52 Europe/London] PHP Notice:  Undefined index: mySpeed in /home/paddygoat/public_html/weedinator/database/send.php on line 50
+[21-Aug-2025 12:12:58 Europe/London] PHP Notice:  Undefined index: mySpeed in /home/paddygoat/public_html/weedinator/database/send.php on line 50
+[25-Aug-2025 13:33:10 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 45
+[25-Aug-2025 13:33:10 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 46
+[25-Aug-2025 13:33:10 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 49
+[25-Aug-2025 13:33:10 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 54
+[25-Aug-2025 13:33:10 Europe/London] PHP Notice:  Undefined index: GPSFixTime in /home/paddygoat/public_html/weedinator/database/send.php on line 55
+[25-Aug-2025 13:33:10 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 56
+[25-Aug-2025 13:33:16 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 45
+[25-Aug-2025 13:33:16 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 46
+[25-Aug-2025 13:33:16 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 49
+[25-Aug-2025 13:33:16 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 54
+[25-Aug-2025 13:33:16 Europe/London] PHP Notice:  Undefined index: GPSFixTime in /home/paddygoat/public_html/weedinator/database/send.php on line 55
+[25-Aug-2025 13:33:16 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 56
+[25-Aug-2025 13:33:21 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 45
+[25-Aug-2025 13:33:21 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 46
+[25-Aug-2025 13:33:21 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 49
+[25-Aug-2025 13:33:21 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 54
+[25-Aug-2025 13:33:21 Europe/London] PHP Notice:  Undefined index: GPSFixTime in /home/paddygoat/public_html/weedinator/database/send.php on line 55
+[25-Aug-2025 13:33:21 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 56
+[25-Aug-2025 13:33:27 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 45
+[25-Aug-2025 13:33:27 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 46
+[25-Aug-2025 13:33:27 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 49
+[25-Aug-2025 13:33:27 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 54
+[25-Aug-2025 13:33:27 Europe/London] PHP Notice:  Undefined index: GPSFixTime in /home/paddygoat/public_html/weedinator/database/send.php on line 55
+[25-Aug-2025 13:33:27 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 56
+[25-Aug-2025 13:33:33 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 45
+[25-Aug-2025 13:33:33 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 46
+[25-Aug-2025 13:33:33 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 49
+[25-Aug-2025 13:33:33 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 54
+[25-Aug-2025 13:33:33 Europe/London] PHP Notice:  Undefined index: GPSFixTime in /home/paddygoat/public_html/weedinator/database/send.php on line 55
+[25-Aug-2025 13:33:33 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 56
+[25-Aug-2025 13:33:39 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 45
+[25-Aug-2025 13:33:39 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 46
+[25-Aug-2025 13:33:39 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 49
+[25-Aug-2025 13:33:39 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 54
+[25-Aug-2025 13:33:39 Europe/London] PHP Notice:  Undefined index: GPSFixTime in /home/paddygoat/public_html/weedinator/database/send.php on line 55
+[25-Aug-2025 13:33:44 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 45
+[25-Aug-2025 13:33:44 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 46
+[25-Aug-2025 13:33:44 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 49
+[25-Aug-2025 13:33:44 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 54
+[25-Aug-2025 13:33:44 Europe/London] PHP Notice:  Undefined index: GPSFixTime in /home/paddygoat/public_html/weedinator/database/send.php on line 55
+[26-Aug-2025 12:02:21 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 45
+[26-Aug-2025 12:02:21 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 49
+[26-Aug-2025 12:02:21 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 54
+[26-Aug-2025 12:02:21 Europe/London] PHP Notice:  Undefined index: GPSFixTime in /home/paddygoat/public_html/weedinator/database/send.php on line 55
+[26-Aug-2025 12:02:21 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 56
+[26-Aug-2025 12:33:04 Europe/London] PHP Notice:  Undefined index: act_lat in /home/paddygoat/public_html/weedinator/database/send.php on line 45
+[26-Aug-2025 12:33:04 Europe/London] PHP Notice:  Undefined index: act_lon in /home/paddygoat/public_html/weedinator/database/send.php on line 46
+[26-Aug-2025 12:33:04 Europe/London] PHP Notice:  Undefined index: act_heading in /home/paddygoat/public_html/weedinator/database/send.php on line 49
+[26-Aug-2025 12:33:04 Europe/London] PHP Notice:  Undefined index: carrierSolutionType in /home/paddygoat/public_html/weedinator/database/send.php on line 54
+[26-Aug-2025 12:33:04 Europe/London] PHP Notice:  Undefined index: GPSFixTime in /home/paddygoat/public_html/weedinator/database/send.php on line 55
+[26-Aug-2025 12:33:04 Europe/London] PHP Notice:  Undefined index: myRelPosAcc in /home/paddygoat/public_html/weedinator/database/send.php on line 56
+[28-Jul-2026 18:05:09 Europe/London] PHP Parse error:  syntax error, unexpected '?' in /home/paddygoat/public_html/weedinator/database/send.php on line 10
+[28-Jul-2026 18:05:15 Europe/London] PHP Parse error:  syntax error, unexpected '?' in /home/paddygoat/public_html/weedinator/database/send.php on line 10
+[28-Jul-2026 18:05:21 Europe/London] PHP Parse error:  syntax error, unexpected '?' in /home/paddygoat/public_html/weedinator/database/send.php on line 10
+[28-Jul-2026 18:46:52 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/send.php on line 75
+[28-Jul-2026 18:46:58 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/send.php on line 75
+[28-Jul-2026 18:47:04 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/send.php on line 75
+[28-Jul-2026 18:51:50 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/send.php on line 75
+[28-Jul-2026 18:52:23 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/send.php on line 75
+[28-Jul-2026 18:52:29 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/send.php on line 75
+[28-Jul-2026 18:52:35 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/send.php on line 75
+[28-Jul-2026 18:52:40 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/send.php on line 75
+[29-Jul-2026 10:53:05 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/fetch_table_list.php on line 15
+[29-Jul-2026 10:53:16 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/fetch_table_list.php on line 15
+[29-Jul-2026 10:53:18 Europe/London] PHP Fatal error:  Call to undefined function http_response_code() in /home/paddygoat/public_html/weedinator/database/fetch_table_list.php on line 15
