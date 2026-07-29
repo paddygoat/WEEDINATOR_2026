@@ -1,0 +1,73 @@
+Here is the full list of image processing property attributes available in the VizionSDK (pyvizionsdk), based directly on the constants exposed within the library's internal structures.
+
+These properties can be used with functions like VxGetISPImageProcessingRange(), VxGetISPImageProcessing(), and VxSetISPImageProcessing().
+1. Image Quality & Enhancement Properties
+
+These adjust the basic visual style, color balance, and clarity of the frame feed:
+
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_BRIGHTNESS (Adjusts overall light intensity)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_CONTRAST (Adjusts the distinction between light and dark areas)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_SATURATION (Adjusts color intensity and vividness)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_SHARPNESS (Enhances edges and fine details)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_GAMMA (Controls luminance curve and mid-tones)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_DENOISE (Controls the sensor digital noise reduction filter strength)
+
+2. Exposure & Light Control Properties
+
+These dictate how the sensor physically collects light and updates its gain behaviors:
+
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_EXPOSURE_MODE (Toggle between Manual and Automatic Exposure loops)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_EXPOSURE_TIME (Manual shutter speed length)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_EXPOSURE_MIN_TIME (Floor limit for Auto-Exposure calculations)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_EXPOSURE_MAX_TIME (Ceiling limit for Auto-Exposure calculations)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_EXPOSURE_GAIN (Manual sensor digital/analog amplification level)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_BACKLIGHT_COMPENSATION (Boosts exposure on shadowed objects in front of bright backgrounds)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_FLICK_MODE (Anti-flicker settings, typically matching 50Hz/60Hz AC power frequencies to stop banding)
+
+3. White Balance & Color Correction
+
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_WHITEBALANCE_MODE (Toggle between Manual and Automatic White Balance)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_WHITEBALANCE_TEMPERATURE (Manual Kelvin temperature control to balance warm/cool cast shifts)
+
+4. Advanced Sensor Modes (HDR & Triggering)
+
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_EHDR_MODE (Enhanced High Dynamic Range operational toggle)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_TRIGGER_MODE (Configures external hardware/software sync trigger parameters instead of continuous streaming)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_EHDR_EXPOSURE_MIN_NUMBER
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_EHDR_EXPOSURE_MAX_NUMBER
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_SPECIAL_EFFECT_MODE (Applies filters like Grayscale, Negative, Sepia, etc.)
+
+5. PTZ (Pan-Tilt-Zoom) & Geometry Alterations
+
+If your camera lens or sensor cropping configuration supports digital or physical movement controls, these attributes dictate frame layout:
+
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_ZOOM (Digital scaling modification factor)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_PAN (Horizontal sub-window alignment offset)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_TILT (Vertical sub-window alignment offset)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_FLIP_MODE (Rotates/mirrors the frame stream array orientation vertically or horizontally)
+    vz.VX_ISP_IMAGE_PROPERTIES.ISP_IMAGE_JPEG_QUALITY (Compression quality ratio parameter if pulling compressed snapshot arrays)
+    
+    
+--- Saturation Property Metrics: Range: [0 to 50]
+--- Contrast Property Metrics: Range: [-50 to 50]
+--- Brightness Property Metrics: Range: [-10 to 10]
+--- Sharpness Property Metrics: Range: [-20 to 20]
+--- Exposure Time Property Metrics: Range: [1 to 100000]
+--- Exposure Gain Property Metrics: Range: [0 to 255]
+--- Confidence Threshold Property Metrics: Range: [0.0 to 1.0]
+--- Coalesce Distance Threshold Property Metrics: Range: [0 to 1000]
+--- Expected Seedlings Target Property Metrics: Range: [0 to 16]
+--- Tunnel Vision Limit Property Metrics: Range: [0 to 400]
+--- Backlight Compensation Property Metrics: Range: [0 to 4]
+--- Flicker Mode Property Metrics: Range: [0 to 3]
+--- White Balance Temperature Property Metrics: Range: [2000 to 10000]
+--- Camera Gamma Property Metrics: Range: [4 to 79]
+--- Camera Denoise Property Metrics: Range: [-2 to 2]
+--- Hue Green Lower Property Metrics: Range: [0.0 to 1.0]
+--- Hue Green Upper Property Metrics: Range: [0.0 to 1.0]
+--- Slider 1 Value Property Metrics: Range: [0 to 500]
+--- Slider 2 Value Property Metrics: Range: [0 to 500]
+
+
+
+
