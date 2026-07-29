@@ -1,4 +1,3 @@
-[![WEEDINATOR YouTube Video](https://img.youtube.com/vi/USgmJXplbWo/hqdefault.jpg)](https://www.youtube.com/watch?v=USgmJXplbWo)
 ![WEEDINATOR in snow](WEEDINATOR_in_snow.JPG)
 # 🤖 WEEDINATOR Control Hardware
 
@@ -28,3 +27,6 @@ The control system was developed through building several agri robots from Iseki
 | **Safety Cameras** | AI Object Detection | A 3-camera set-up based on Raspberry Pis (one set at the front, one at the back). Uses Ai object detection to help the robot avoid collision with a large set of defined objects, especially people. |
 
 ## ⚙️ Assembly Instructions: Please download the Instructions PDF here: [Assembly_instructions](https://github.com/paddygoat/WEEDINATOR_2026/blob/main/Instructions/Control_panel_assembly_instructions_01.pdf)
+
+## Youtube Playlist:
+[![WEEDINATOR YouTube Video](https://img.youtube.com/vi/USgmJXplbWo/hqdefault.jpg)](https://www.youtube.com/watch?v=USgmJXplbWo)
