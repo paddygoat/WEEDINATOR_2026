@@ -1,3 +1,4 @@
+![WEEDINATOR in snow](WEEDINATOR_in_snow.JPG)
 # 🤖 WEEDINATOR Control Hardware
 
 **[WEEDINATOR Homepage](https://weedinator.uk)**
