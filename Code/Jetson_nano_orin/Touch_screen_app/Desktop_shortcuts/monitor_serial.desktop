@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Monitor Serial Comms
+Comment=Monitor Serial Comms
+Exec=bash -i -c 'export DISPLAY=:0 && source ~/.bashrc && cd /home/nano && source python_env_01/bin/activate && export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/home/nano/python_env_01/lib/python3.10/site-packages/nvidia/cusparselt/lib:$LD_LIBRARY_PATH && cd /home/nano/Documents/WEEDINATOR/Code/Jetson_nano && python3 monitor_serial_comms.py; exec bash'
+Icon=utilities-terminal
+Terminal=true
