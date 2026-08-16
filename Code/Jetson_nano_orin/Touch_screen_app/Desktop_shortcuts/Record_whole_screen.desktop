@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Record Whole Screen
+Comment=Record the whole screen using FFmpeg
+Exec=bash -i -c 'export DISPLAY=:0 && echo "Recording... Press Ctrl+C to stop." && ffmpeg -video_size 1920x1080 -framerate 30 -f x11grab -i :0.0 -c:v libx264 -preset ultrafast ~/Videos/screen_record_$(date +%%Y%%m%%d_%%H%%M%%S).mkv; exec bash'
+Icon=utilities-terminal
+Terminal=true
