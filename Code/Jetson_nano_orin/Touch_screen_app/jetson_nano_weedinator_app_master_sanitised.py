@@ -1,5 +1,20 @@
-
+# Do not ever remove the next 3 lines:
 '''
+
+sudo systemctl restart nvargus-daemon
+sleep 10;
+sudo pkill -f weedinator
+sudo pkill -f python3
+pkill -f jetson_nano_weedinator_app_master.py
+pkill -f my_start_up_script.sh
+
+cd && source python_env_01/bin/activate && export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/home/nano/python_env_01/lib/python3.10/site-packages/nvidia/cusparselt/lib:$LD_LIBRARY_PATH && cd /home/nano/Documents/WEEDINATOR/Code/Jetson_nano && python3 jetson_nano_weedinator_app_master.py
+
+
+export DISPLAY=:0 && cd /home/nano/Documents/WEEDINATOR/Code/Jetson_nano && source /home/nano/python_env_01/bin/activate && export LD_LIBRARY_PATH=/home/nano/python_env_01/lib/python3.10/site-packages/nvidia/cusparselt/lib:$LD_LIBRARY_PATH && python3 jetson_nano_weedinator_app_master.py
+
+export DISPLAY=:0 && cd /home/nano/Documents/WEEDINATOR/Code/Jetson_nano && source /home/nano/python_env_01/bin/activate && export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/home/nano/python_env_01/lib/python3.10/site-packages/nvidia/cusparselt/lib:$LD_LIBRARY_PATH && sleep 5 && python3 jetson_nano_weedinator_app_master.py
+
 Color	Standard (Normal)	Bright / Light
 Black	\033[30m	        \033[90m
 Red	    \033[31m	        \033[91m
@@ -244,7 +259,7 @@ def process_data_string_to_2d_array(data_string: str) -> List[List[Union[int, fl
 #################################################################################################################
 def download_waypoints(): # Called by read_database_thread()
     print("Try to download waypoints .....")
-    url_retreive_all_data = "http://www.################/control_room_database/show_all_data.php"
+    url_retreive_all_data = "http://www.###############/weedinator/control_room_database/show_all_data.php"
     headers = {"X-API-Password": passwords.get_password()}
     
     try:
@@ -294,7 +309,7 @@ def retreive_data_from_des_coords_table():
         time_stamp:time_stamp
     """
     # print("Try to get single line time stamp data ....")
-    url_retreive_min = "http://www.################/control_room_database/show_single_line.php"
+    url_retreive_min = "http://www.###############/weedinator/control_room_database/show_single_line.php"
     headers = {"X-API-Password": passwords.get_password()}
 
     try:
@@ -358,15 +373,40 @@ def read_database_thread():
                 # print("waypointsArray from des_coords table: ",shared_state.waypointsArray)
         time.sleep(60)
 #################################################################################################################
-def autodetect_serial_ports():
+def port_recovery_thread():
+    """
+    Continuously monitors for dropped or newly connected serial ports
+    and spins up new read threads for them to enable auto-reconnect.
+    """
+    while True:
+        time.sleep(5)
+        # Silently scan for currently available hardware ports
+        current_ports = autodetect_serial_ports(quiet=True)
+
+        # Safely check which ports are actively being monitored
+        with ports_lock:
+            active_ports = list(open_ports.keys())
+
+        # If a port is physically connected but we don't have an active thread for it, start one
+        for port in current_ports:
+            if port not in active_ports:
+                print(f"\n[RECOVERY] New or reconnected port detected: {port}. Initializing thread...")
+                thread = threading.Thread(target=read_and_parse_serial, args=(port,), daemon=True)
+                thread.start()
+
+def autodetect_serial_ports(quiet=False):
     """
     Automatically detects available serial ports and returns a list of port names.
     """
-    print("\n[PORT DETECTOR] Searching for available serial ports...")
+    if not quiet:
+        print("\n[PORT DETECTOR] Searching for available serial ports...")
+        
     available_ports = [port.device for port in list_ports.comports()]
     
-    if not available_ports:
-        print("[PORT DETECTOR] WARNING: No serial ports found. Ensure devices are connected.")
+    if not quiet:
+        print("\n[PORT DETECTOR] available_ports = ",available_ports)
+        if not available_ports:
+            print("[PORT DETECTOR] WARNING: No serial ports found. Ensure devices are connected.")
     
     return available_ports
 #################################################################################################################
@@ -553,7 +593,7 @@ def read_and_parse_serial(port_name):
                                     if is_auto_weed:
                                         # Read from shared_state when AUTO WEED is ON
                                         incoming_ch12_data = shared_ch12
-                                        print("Reading ch12_data from shared_state.py: ",incoming_ch12_data)
+                                        # print("Reading ch12_data from shared_state.py: ",incoming_ch12_data)
                                     else:
                                         # Read from MCU0 when AUTO WEED is OFF
                                         incoming_ch12_data = mcu1_command["ch12_data"]
@@ -840,7 +880,7 @@ def send_data_to_weedinator(
     mySpeed, GPSspeed_calc, encoderSteerVal, GSM_session_num,
     carrierSolutionType, GPSFixTime, myRelPosAcc
 ):
-    url_send = "http://www.################/database/send.php"
+    url_send = "http://www.###############/weedinator/database/send.php"
     headers = {"X-API-Password": passwords.get_password()}
 
     payload = {
@@ -918,6 +958,10 @@ def main():
     update_camera_frame_thread = threading.Thread(target=update_camera_frame)
     threads.append(update_camera_frame_thread)
     update_camera_frame_thread.start()
+    
+    recovery_thread = threading.Thread(target=port_recovery_thread, daemon=True)
+    threads.append(recovery_thread)
+    recovery_thread.start()
     
     gui_thread()
     

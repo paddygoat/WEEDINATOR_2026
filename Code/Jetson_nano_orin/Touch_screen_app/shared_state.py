@@ -2,7 +2,7 @@
 
 import threading
 from collections import deque
-import time  # <--- Add this import
+import time
 
 # --- App Start Time Tracking ---
 start_time = time.time()  # <--- Stores the application baseline start time
@@ -49,6 +49,7 @@ encDrawbarActVal = 0
 
 # --- Settings ---
 USE_CAMERA = True  # True = Live Camera, False = Video File
+X_AXIS_ADJUST = 0
 slider_1_val = 999
 slider_2_val = 999
 camera_saturation = 15
@@ -92,6 +93,13 @@ yellow_flash_event = False
 
 # ADD THIS LINE TO TRACK EXPECTED TIME DELTA:
 expected_time_delta_val = 0.0
+
+# TRACK VISION LOOP TIME:
+vision_loop_time = 0.0
+
+# Array to store loop speed data (timestamp, duration) ---
+loop_speed_array = deque(maxlen=MAX_GRAPH_POINTS)
+data_for_analysis = deque(maxlen=MAX_GRAPH_POINTS)
 
 ch12_data = 992 # horizontal hydraulic actuator
 

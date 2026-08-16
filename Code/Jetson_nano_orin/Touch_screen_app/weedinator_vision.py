@@ -1,7 +1,12 @@
 # weedinator_vision.py
 # Camera is TechNexion TEVS-AR0234 (/dev/video0), onsemi AR0234 (2.3 Megapixel, 1920 \times 1200) CMOS image sensor, global shutter.
-
+'''
+cd && source python_env_01/bin/activate &&
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/home/nano/python_env_01/lib/python3.10/site-packages/nvidia/cusparselt/lib:$LD_LIBRARY_PATH &&
+cd /home/nano/Documents/WEEDINATOR/Code/Jetson_nano && kernprof -l -v weedinator_vision.py
+'''
 # --- CRITICAL JETSON FIX: IMPORT TENSORRT FIRST ---
+import torch
 import tensorrt
 # --------------------------------------------------
 
@@ -21,14 +26,47 @@ import math
 import json
 import os
 import inspect
+from collections import deque
+import gc
+import psutil
+import builtins
+from line_profiler import LineProfiler
+
+# --- PROFILER TOGGLE ---
+ENABLE_PROFILER = False
+
+# Initialize the profiler globally conditionally
+if ENABLE_PROFILER:
+    lp = LineProfiler()
+else:
+    lp = None
+
+# Ensure @profile does not crash the script when run without kernprof
+if "profile" not in builtins.__dict__:
+
+    def profile(func):
+        return func
+
+# disable automatic GC sweeps to prevent random pauses
+gc.disable()
+
+# If needed, you can manually trigger a light GC sweep between iterations or during idle states:
+# gc.collect(generation=0)
+
+# --- CPU RECORDING VARIABLES ---
+RECORD_CPU = True
+RECORD_CPU_TIME_INTERVAL = 2.0
+
+# frame DECIMATOR variable here
+VISION_TO_GUI_FRAME_DECIMATOR = 5
 
 expected_time_delta = 8.9 # This variable can be adjusted by both the camera detections and the encoder on the implement wheel, with appropriate weighting.
 DEBOUNCE_TIME = expected_time_delta/5
 
-RECORD_GRAPH_DATA = True
+RECORD_GRAPH_DATA = False
 
 # Disable Ultralytics logging globally
-# logging.getLogger("ultralytics").setLevel(logging.ERROR)
+logging.getLogger("ultralytics").setLevel(logging.ERROR)
 
 # Define the minimum area threshold:
 MIN_CENTROID_AREA = 500
@@ -72,16 +110,16 @@ DESKTOP_DISPLAY = True
 TIME_CALCS = True
 ANIMATED_PLOT = True
 
-DISPLAY_WIDTH = 800 # GUI display
-DISPLAY_HEIGHT = 480
+# DISPLAY_WIDTH = 800 # GUI display
+# DISPLAY_HEIGHT = 480
 
-DISPLAY_WIDTH = 960 # GUI display
-DISPLAY_HEIGHT = 600
+# DISPLAY_WIDTH = 960 # GUI display
+# DISPLAY_HEIGHT = 600
 
 DISPLAY_WIDTH = 1048 # GUI display
 DISPLAY_HEIGHT = 656
 
-CAMERA_FRAME_RATE = 10
+CAMERA_FRAME_RATE = 30000
 CAMERA_SOURCE = 0
 CONFIDENCE_THRESHOLD = 0.10
 
@@ -135,12 +173,13 @@ mid_x = 0
 width = 0
 height = 0
 
-adjust_time = 0.05
+adjust_time = 0.01
 # absolute fastest stable speed without dropping camera commands, use 0.005
 
 
 # --- GLOBAL TENSORRT INITIALIZATION ---
 MODEL_NAME = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/Models/business_cards_02.engine"
+# MODEL_NAME = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/Models/seedlings_onions_slugs_YOLO26_model_ready_to_deploy_01.pt"
 print("\n[Vision Setup] Loading raw TensorRT engine into main thread...")
 
 # CRITICAL: Tell Ultralytics this is a 'detect' task since trtexec engines have no metadata headers
@@ -158,6 +197,75 @@ class_names: Dict[int, str] = model.names
 allowed_classes = [id for id in class_names.keys() if id != 13]
 # --------------------------------------
 
+def group_coordinates_fast(coords: List[int], tolerance: int) -> List[List[int]]:
+    """Groups coordinates using an incremental mean to avoid np.mean overhead."""
+    groups = [] # Format: [[sum, count, [elements]], ...]
+    for val in coords:
+        found = False
+        for group in groups:
+            group_mean = group[0] / group[1]
+            if abs(val - group_mean) < tolerance:
+                group[0] += val       # Add to sum
+                group[1] += 1         # Increment count
+                group[2].append(val)  # Store the actual element
+                found = True
+                break
+        if not found:
+            groups.append([val, 1, [val]])
+            
+    # Return just the lists of elements to perfectly match your original format
+    return [g[2] for g in groups]
+    
+def get_per_core_cpu_usage() -> List[float]:
+    """Reads CPU usage for all cores using psutil, scaled to a 0.0 - 1.0 range."""
+    try:
+        # Returns a list of percentages, one for each core, divided by 100
+        return [usage / 100.0 for usage in psutil.cpu_percent(percpu=True)]
+    except Exception as e:
+        print(f"[Vision Error] Failed to read CPU usage: {e}")
+        return [0.0] * 6
+
+def get_jetson_temperatures() -> Tuple[float, float, float]:
+    """Reads Jetson temperatures safely across all JetPack versions and handles simulation mode."""
+    thermal_dir = "/sys/devices/virtual/thermal/"
+    cpu_temp, gpu_temp, ao_temp = 0.0, 0.0, 0.0
+    
+    # Check if we are running on a Jetson environment with sysfs thermal zones
+    if os.path.exists(thermal_dir):
+        try:
+            zones = [d for d in os.listdir(thermal_dir) if d.startswith("thermal_zone")]
+            for zone in zones:
+                type_path = os.path.join(thermal_dir, zone, "type")
+                temp_path = os.path.join(thermal_dir, zone, "temp")
+                try:
+                    with open(type_path, "rb") as f:
+                        raw_type = f.read()
+                    if not raw_type:
+                        continue
+                    zone_name = raw_type.decode("utf-8", errors="ignore").strip().lower()
+                    
+                    with open(temp_path, "rb") as f:
+                        raw_temp = f.read()
+                    if not raw_temp:
+                        continue
+                    temp_c = int(raw_temp.decode("utf-8", errors="ignore").strip()) / 1000.0
+                    
+                    # Flexible substring matching for any Jetson naming convention
+                    if "cpu" in zone_name:
+                        cpu_temp = temp_c
+                    elif "gpu" in zone_name:
+                        gpu_temp = temp_c
+                    elif "ao" in zone_name or "soc" in zone_name:
+                        if ao_temp == 0.0:
+                            ao_temp = temp_c
+                except (FileNotFoundError, ValueError, AttributeError):
+                    pass
+        except FileNotFoundError:
+            pass
+
+    return cpu_temp, gpu_temp, ao_temp
+
+@profile
 def normalize_angle(angle_deg: float) -> float:
     """Normalize angle to the range [0, 180] degrees for line orientation."""
     # Convert angle from [-180, 180] to [0, 360]
@@ -167,6 +275,7 @@ def normalize_angle(angle_deg: float) -> float:
         angle_deg -= 180
     return angle_deg
 
+@profile
 def calculate_angle_between_centers(center1: Tuple[int, int], center2: Tuple[int, int]) -> float:
     """Calculate the normalized angle (0-180 degrees) between two points."""
     x1, y1 = center1
@@ -181,6 +290,7 @@ def calculate_angle_between_centers(center1: Tuple[int, int], center2: Tuple[int
     
     return normalize_angle(angle_deg)
 
+@profile
 def calculate_distance(center1: Tuple[int, int], center2: Tuple[int, int]) -> float:
     """Calculate the Euclidean distance between two points."""
     x1, y1 = center1
@@ -188,6 +298,7 @@ def calculate_distance(center1: Tuple[int, int], center2: Tuple[int, int]) -> fl
     distance = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
     return distance
 
+@profile
 def append_smoothed_crossing(filtered_array: list, current_timestamp: float, current_delta: float, expected_delta: float):
     """
     Interpolates missed crossings and appends smoothed time deltas.
@@ -215,26 +326,13 @@ def append_smoothed_crossing(filtered_array: list, current_timestamp: float, cur
     else:
         filtered_array.append((current_timestamp, round(current_delta, 2)))
 
-def perform_cv2_blur_and_mask(input_image_pil: Image.Image, hue_lower: float, hue_upper: float) -> Tuple[np.ndarray, np.ndarray]:
+@profile
+def perform_cv2_blur_and_mask(image_bgr: np.ndarray, hue_lower: float, hue_upper: float) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Performs CPU-accelerated Blur and Green Color Masking using OpenCV.
-
-    Args:
-        input_image_pil (Image.Image): The input image in PIL format (RGB).
-
-    Returns:
-        Tuple[np.ndarray, np.ndarray]:
-        1. masked_image: The blurred and masked image as a NumPy array (BGR).
-        2. mask: The binary mask as a NumPy array (0s and 255s).
+    Performs CPU-accelerated Blur and Green Color Masking using native OpenCV.
+    No PIL or RGB conversions required.
     """
-    
-    # 1. Convert PIL Image to OpenCV format (NumPy array)
-    # PIL Image is RGB, convert it to NumPy array
-    image_np_rgb = np.array(input_image_pil)
-    # OpenCV uses BGR, so convert RGB to BGR
-    image_bgr = cv2.cvtColor(image_np_rgb, cv2.COLOR_RGB2BGR)
-
-    # 2. Apply iterative Gaussian Blur
+    # 1. Apply iterative Gaussian Blur directly to the BGR array
     blurred_image = image_bgr
     for _ in range(BLUR_ITERATIONS):
         blurred_image = cv2.GaussianBlur(
@@ -243,26 +341,19 @@ def perform_cv2_blur_and_mask(input_image_pil: Image.Image, hue_lower: float, hu
             sigmaX=BLUR_SIGMA
         )
 
-    # 3. Perform Green Color Masking
+    # 2. Perform Green Color Masking
     hsv_image = cv2.cvtColor(blurred_image, cv2.COLOR_BGR2HSV)
 
-    # Use the dynamic variables passed into the function
-    lower_green = np.array([
-        hue_lower * 179, 
-        SATURATION_MIN * 255, 
-        BRIGHT_VAL_MIN * 255
-    ])
-    upper_green = np.array([
-        hue_upper * 179, 
-        SATURATION_MAX * 255, 
-        BRIGHT_VAL_MAX * 255
-    ])
+    # Use the dynamic variables passed into the function (Ensuring uint8 data type)
+    lower_green = np.array([hue_lower * 179, SATURATION_MIN * 255, BRIGHT_VAL_MIN * 255], dtype=np.uint8)
+    upper_green = np.array([hue_upper * 179, SATURATION_MAX * 255, BRIGHT_VAL_MAX * 255], dtype=np.uint8)
     
     mask = cv2.inRange(hsv_image, lower_green, upper_green)
     masked_image = cv2.bitwise_and(blurred_image, blurred_image, mask=mask)
     
     return masked_image, mask
 
+@profile
 def adjust_camera_settings():
     # 1. Scan for connected TechNexion GMSL2/CSI cameras
     result, camera_list = vz.VxDiscoverCameraDevices()
@@ -398,7 +489,7 @@ def adjust_camera_settings():
         # Returns the camera handle up to the parent application frame-loop
         return camera
 
-def update_camera_frame():
+def process_results_loop():
     global expected_time_delta
 
     width = 0
@@ -434,40 +525,37 @@ def update_camera_frame():
     camera_handle = None
 
     if USE_CAMERA:
-        print(f"Initializing camera device {CAMERA_SOURCE} at 1920x1200...")
-        cap = cv2.VideoCapture(CAMERA_SOURCE)
-        if not cap.isOpened():
-            print("[ERROR] OpenCV could not open the GStreamer pipeline! Aborting.")
-            import sys
-            sys.exit(1) # Stop the script here instead of hanging
-        
-        # Force the hardware resolution constraints directly on the stream
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1200)
-        cap.set(cv2.CAP_PROP_FPS, CAMERA_FRAME_RATE)
-        
-        # --- Run Live Inference ---
-        print(f"Starting live object detection on camera source: {CAMERA_SOURCE}")
-        camera_handle = adjust_camera_settings()
-        
-        # [ KEEP YOUR EXISTING GSTREAMER PIPELINE CODE HERE ]
+        # Define the hardware-accelerated Jetson GStreamer pipeline
         gstreamer_pipeline = (
-        "v4l2src device=/dev/video0 io-mode=2 ! "  
-        "video/x-raw, format=UYVY, width=1920, height=1200, framerate=60/1 ! "  
-        "nvvidconv ! video/x-raw(memory:NVMM) ! "  
-        "nvvidconv ! video/x-raw, format=BGRx ! "  
-        "videoconvert ! video/x-raw, format=BGR ! "  
-        "appsink drop=true max-buffers=1 sync=false"  
-        )  
+            "v4l2src device=/dev/video0 io-mode=2 ! "  
+            "video/x-raw, format=UYVY, width=1920, height=1200, framerate=60/1 ! "  
+            "nvvidconv ! video/x-raw(memory:NVMM) ! "  
+            "nvvidconv ! video/x-raw, format=BGRx ! "  # Removed the forced DISPLAY_WIDTH/HEIGHT resizing
+            "videoconvert ! video/x-raw, format=BGR ! "  
+            "appsink drop=true max-buffers=1 sync=false"  
+        )
         
         print(f"Opening camera stream via GStreamer: {gstreamer_pipeline}")
         cap = cv2.VideoCapture(gstreamer_pipeline, cv2.CAP_GSTREAMER)
         
+        # --- Fallback to Direct V4L2 if GStreamer Fails ---
         if not cap.isOpened():
-            print("GStreamer pipeline initialization failed. Falling back to direct V4L2...")
+            print("⚠️⚠️⚠️ GStreamer pipeline initialization failed. Falling back to direct V4L2...⚠️⚠️⚠️")
             cap = cv2.VideoCapture(CAMERA_SOURCE, cv2.CAP_V4L2)
-            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1200)
+            if cap.isOpened():
+                # Restrict buffer size to 1 so old frames are dropped when the loop lags
+                cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1200)
+                cap.set(cv2.CAP_PROP_FPS, CAMERA_FRAME_RATE)
+            else:
+                print("[ERROR] OpenCV could not open camera stream via GStreamer or V4L2! Aborting.")
+                import sys
+                sys.exit(1)
+
+        print(f"Starting live object detection on camera source: {CAMERA_SOURCE}")
+        camera_handle = adjust_camera_settings()
+
     else:
         print(f"Initializing video stream from file: {video_path}")
         cap = cv2.VideoCapture(video_path)
@@ -580,20 +668,26 @@ Camera stream initialized successfully. Starting manual frame processing loop...
     LAST_CROSSING_EPOCH_TIME_GREEN = None
     current_epoch_time = 0.0
 
-    GREEN_TIME_DELTA_ARRAY = []
-    GREEN_TIME_DELTA_ARRAY_FILTERED = []
-    YOLO_TIME_DELTA_ARRAY_FILTERED = []
-    AVERAGED_TIME_DELTA_ARRAY = []
-    LIGHT_BULB_FLASH_DELTA_ARRAY = []
+    # Define a strict maximum capacity so memory never bloats and GC pauses stop
+    MAX_HISTORY_POINTS = 20
+
+    GREEN_TIME_DELTA_ARRAY = deque(maxlen=MAX_HISTORY_POINTS)
+    GREEN_TIME_DELTA_ARRAY_FILTERED = deque(maxlen=MAX_HISTORY_POINTS)
+    YOLO_TIME_DELTA_ARRAY_FILTERED = deque(maxlen=MAX_HISTORY_POINTS)
+    AVERAGED_TIME_DELTA_ARRAY = deque(maxlen=MAX_HISTORY_POINTS)
+    LIGHT_BULB_FLASH_DELTA_ARRAY = deque(maxlen=MAX_HISTORY_POINTS)
     averageCalculated = False
 
     # --- Crossing Detection State Variables for YOLO ---
     LAST_POSITION_BELOW_YOLO = None
     LAST_CROSSING_EPOCH_TIME_YOLO = None
-    YOLO_TIME_DELTA_ARRAY = []
+    # FIX 3: Bound these arrays to prevent infinite linear growth and GC freezes
+    YOLO_TIME_DELTA_ARRAY = deque(maxlen=MAX_HISTORY_POINTS)
 
     # --- Averaged Time Delta Arrays ---
-    PREDICTED_TIME_DELTA_ARRAY = []
+    PREDICTED_TIME_DELTA_ARRAY = deque(maxlen=MAX_HISTORY_POINTS)
+    
+    
     first_missing = False
     second_missing = False
     third_missing = False
@@ -606,7 +700,82 @@ Camera stream initialized successfully. Starting manual frame processing loop...
     
     LAST_FLASH_EPOCH_TIME = None
 
+    ch12_data = 0
+    TIME_A = 0
+    TIME_B = 0
+    TIME_C = 0
+    TIME_D = 0
+    TIME_E = 0
+    TIME_F = 0
+    TIME_G = 0
+    TIME_H = 0
+    TIME_I = 0
+    TIME_J = 0
+    TIME_K = 0
+    TIME_L = 0
+    TIME_M = 0
+    TIME_N = 0
+    TIME_O = 0
+    TIME_P = 0
+    TIME_Q = 0
+    
+    last_loop_time = time.time()
+    
+    last_temp_read_time = 0.0
+    cpu_temp, gpu_temp, ao_temp = 0.0, 0.0, 0.0
+    
+    # --- Initialize CPU tracking variables ---
+    last_cpu_read_time = 0.0
+    cpu_usages = [0.0] * 6  # Setup for Orin Nano's 6 cores
+
+    frame_count = 0
+    frame_counter = 0  # Initialize frame counter for periodic GC
+
+    # Process using a manual while loop to support the GStreamer cv2.VideoCapture pipeline
     while True:
+        frame_count += 1
+        frame_counter += 1
+
+        # Trigger lightweight generation 0 collection every 300 frames (~10 seconds at 30 FPS)
+        if frame_counter % 300 == 0:
+            gc.collect(generation=0)
+        
+        # --- PERIODIC PROFILER STATS PRINTER ---
+        if ENABLE_PROFILER and (frame_count % 100 == 0):
+            print(f"\n--- PROGRAMMATIC LINE PROFILER STATS (Frame {frame_count}) ---")
+            if lp is not None:
+                lp.print_stats()
+                with open('my_profiler_file.txt', 'w') as f:
+                    lp.print_stats(stream=f)
+        # ----------------------------------------
+
+        # --- Calculate loop time since previous iteration ---
+        current_loop_time = time.time()
+        loop_duration = current_loop_time - last_loop_time
+        last_loop_time = current_loop_time
+        
+        # --- Calculate elapsed time since app start ---
+        elapsed_app_time = current_loop_time - shared_state.start_time
+        
+        t_ref = time.time()
+        
+        # Read live hardware temperatures only once every 2 seconds
+        if current_epoch_time - last_temp_read_time > 2.0:
+            cpu_temp, gpu_temp, ao_temp = get_jetson_temperatures()
+            last_temp_read_time = current_epoch_time
+            
+        # --- Read CPU usage every 2 seconds ---
+        if RECORD_CPU and (current_epoch_time - last_cpu_read_time > RECORD_CPU_TIME_INTERVAL):
+            raw_usages = get_per_core_cpu_usage()
+            cpu_usages = (raw_usages + [0.0]*6)[:6] 
+            last_cpu_read_time = current_epoch_time
+        
+        if TIME_CALCS == True:
+            TIME_B = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+
+#################################################################################################################
+        
         ret, frame = cap.read()
         current_epoch_time = time.time()
         
@@ -623,84 +792,104 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 continue
             
-        # print("Camera frame successfully grabbed! Running inference...")
-            
-        # Run YOLO inference directly on the grabbed frame array
+        # Resize frame explicitly for YOLO matching GUI dimensions
+        # frame_resized = cv2.resize(frame, (DISPLAY_WIDTH, DISPLAY_HEIGHT))
+        # Resize frame explicitly for YOLO matching GUI dimensions using high-quality downsampling
+        # frame_resized = cv2.resize(frame, (DISPLAY_WIDTH, DISPLAY_HEIGHT), interpolation=cv2.INTER_AREA)
+
+        # Execute manual YOLO inference
         results = model.predict(
-            source=frame,              # Pass the raw NumPy frame array directly
-            conf=current_gui_conf,     # Dynamically applies your GUI slider value seamlessly
+            source=frame,
+            conf=current_gui_conf,
+            iou=0.45,                 
+            max_det=20,               
             device='0', 
             verbose=False, 
-            classes=allowed_classes    # Suppresses class 13 (slugs) completely
+            classes=allowed_classes,
+            half=True                 
         )
         
-        # Extract the primary result object so the rest of your original script runs unchanged
+        # Extract the primary result object so the rest of your speed enhancements (NumPy extractions) run flawlessly
         result = results[0]
         # ------------------------------------------------------------------------
+#################################################################################################################
+        # print("Camera frame successfully grabbed! Running inference...")
+        # Run YOLO inference directly on the grabbed frame array
+        # frame_resized = cv2.resize(frame, (640, 640))
+        # DISPLAY_WIDTH = 1048 # GUI display DISPLAY_HEIGHT = 656
+        # frame_resized = frame
+        # Extract the primary result object so the rest of your original script runs unchanged
+        # ------------------------------------------------------------------------
+
+        current_epoch_time = time.time()
+        
+        # Calculate relative time since application started
+        current_rel_time = current_epoch_time - shared_state.start_time
     
+        if TIME_CALCS == True:
+            TIME_C = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
 
-
+#################################################################################################################
         # Get the bounding box object
         boxes = result.boxes
+        
+        # 0. --- MASS GPU-TO-CPU EXTRACTION (DO THIS ONCE) ---
+        # Pull all YOLO data into native NumPy arrays immediately to prevent GPU loop thrashing
+        yolo_classes = boxes.cls.cpu().numpy().astype(int) if len(boxes) > 0 else np.array([])
+        yolo_confidences = boxes.conf.cpu().numpy() if len(boxes) > 0 else np.array([])
+        yolo_coords = boxes.xyxy.cpu().numpy().astype(int) if len(boxes) > 0 else np.array([])
         
         # --- TUNNEL VISION CALCULATIONS ---
         with shared_state.data_lock:
             current_tunnel_vision = shared_state.tunnel_vision
             
-        # Scale the UI tunnel vision slider to the actual camera frame width
         frame_height, frame_width = result.orig_shape
         
-        
-        # ONE-OFF PRINT OF CAMERA FRAME SIZE
         if not has_printed_dimensions:
             print("\n" + "="*40)
             print(f"NATIVE CAMERA RESOLUTION DETECTED:")
             print(f"  Frame Width:  {frame_width} px")
             print(f"  Frame Height: {frame_height} px")
             print("="*40 + "\n")
-            has_printed_dimensions = True  # Flips the flag so it never runs again
+            has_printed_dimensions = True 
 
         scale_x = frame_width / DISPLAY_WIDTH
         actual_tunnel_left = int(current_tunnel_vision * scale_x)
         actual_tunnel_right = frame_width - actual_tunnel_left
         
-        # --- FILTER YOLO BOXES BY TUNNEL VISION ---
+        # --- FILTER YOLO BOXES BY TUNNEL VISION (USING FAST NUMPY) ---
         tunnel_boxes_conf = []
-        for i in range(len(boxes)):
-            coords = boxes.xyxy[i].cpu().numpy().astype(int).flatten()
-            box_cx = (coords[0] + coords[2]) // 2 # Center X of the YOLO box
+        for i in range(len(yolo_classes)):
+            x_min, y_min, x_max, y_max = yolo_coords[i]
+            box_cx = (x_min + x_max) // 2 
             if actual_tunnel_left < box_cx < actual_tunnel_right:
-                tunnel_boxes_conf.append(boxes.conf[i].cpu().item())
+                tunnel_boxes_conf.append(yolo_confidences[i])
                 
         actual_detections_in_tunnel = len(tunnel_boxes_conf)
             
     
         # 1. --- LOGIC TO PRINT DIMENSIONS AND COORDINATES ---
-    
-        # boxes.xyxy returns the coordinates in the format [x_min, y_min, x_max, y_max]
-        # boxes.cls returns the class IDs
-        # We loop through each detected box
-        for i in range(len(boxes)):
-            # Get coordinates as a numpy array: [x_min, y_min, x_max, y_max]
-            coords = boxes.xyxy[i].cpu().numpy().astype(int).flatten()
-            x_min, y_min, x_max, y_max = coords
+        # We loop through each detected box using our pre-extracted NumPy arrays
+        for i in range(len(yolo_classes)):
+            
+            # Get coordinates directly from the yolo_coords array
+            x_min, y_min, x_max, y_max = yolo_coords[i]
         
             # Calculate dimensions
             width = x_max - x_min
             height = y_max - y_min
-            
-            # Calculate the vertical midpoint (the y-coordinate of the reference line)
-            # mid_y = int(height / 2)
         
-            # Get class ID and look up the name
-            class_id = int(boxes.cls[i].cpu().item())
+            # Get class ID and look up the name directly from the NumPy arrays
+            class_id = yolo_classes[i]
             label = class_names.get(class_id, "Unknown")
-            confidence = boxes.conf[i].cpu().item()
+            confidence = yolo_confidences[i]
         
             # print(f"--- Detected: {label} (Conf: {confidence:.2f}) ---")
             # print(f"  Coordinates (x_min, y_min): ({x_min}, {y_min})")
             # print(f"  Coordinates (x_max, y_max): ({x_max}, {y_max})")
             # print(f"  Dimensions (W x H): {width} x {height}")
+
         
         # --- Monitor and apply GUI slider mutations ---
         with shared_state.data_lock:
@@ -721,6 +910,7 @@ Camera stream initialized successfully. Starting manual frame processing loop...
             current_gui_gamma = shared_state.camera_gamma
             current_gui_denoise = shared_state.camera_denoise
             current_gui_backlight = shared_state.camera_backlight_comp
+            current_x_axis_adjust = shared_state.X_AXIS_ADJUST
             current_gui_flick = shared_state.camera_flick_mode
             EXPECTED_SEEDLINGS_IN_FRAME = shared_state.expected_seedlings_target
             TUNNEL_VISION = shared_state.tunnel_vision
@@ -933,18 +1123,16 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 if raw_video_writer is not None:
                     raw_video_writer.release()
                     raw_video_writer = None
+                    
+        if TIME_CALCS == True:
+            TIME_D = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
 
-############################################################################
+#################################################################################################################
 
         # --- CV2 video Frame Processing Pipeline ---:
-        
-        # Get the raw image frame for color analysis and box drawing
         frame = result.orig_img
-        
-        # 1. Calculate tunnel boundaries scaled to the actual camera resolution
         frame_height, frame_width = result.orig_shape
-        
-        # ADD THIS LINE TO SET THE TRUE MIDPOINT:
         mid_y = int(frame_height / 2)
 
         with shared_state.data_lock:
@@ -954,55 +1142,38 @@ Camera stream initialized successfully. Starting manual frame processing loop...
         actual_tunnel_left = int(current_tunnel_vision * scale_x)
         actual_tunnel_right = frame_width - actual_tunnel_left
 
-        # 2. Start with a clean copy of the raw frame instead of using result.plot()
         frame_with_detections = frame.copy()
 
-        # 3. Manually render bounding boxes ONLY if they fall inside the tunnel limits and class is less than 7. Classes above 6 are weeds and slugs.
-        for i in range(len(boxes)):
-            # Fetch class ID first to filter out unwanted classes early
-            class_id = int(boxes.cls[i].cpu().item())
+        # 3. Manually render bounding boxes using the fast NumPy arrays we extracted earlier
+        for i in range(len(yolo_classes)):
+            class_id = yolo_classes[i]
             if class_id > 6:
-                continue # Jumps to next box in loop.
+                continue 
                 
-            coords = boxes.xyxy[i].cpu().numpy().astype(int).flatten()
-            x_min, y_min, x_max, y_max = coords
-            
-            # Calculate the box's horizontal center point
+            x_min, y_min, x_max, y_max = yolo_coords[i]
             box_cx = (x_min + x_max) // 2
             
-            # Filter condition: Only draw if the box center is within the lines
             if actual_tunnel_left < box_cx < actual_tunnel_right:
-                # Draw the bounding box rectangle (Bright Blue color in BGR: (255, 0, 0))
                 cv2.rectangle(frame_with_detections, (x_min, y_min), (x_max, y_max), (255, 0, 0), 2)
                 
-                # Fetch class label and confidence score
                 label = class_names.get(class_id, "Unknown")
-                confidence = boxes.conf[i].cpu().item()
-                text_label = f"{label} {confidence:.2f}"
-                
-                # Render label text directly above the box
+                text_label = f"{label} {yolo_confidences[i]:.2f}"
                 cv2.putText(frame_with_detections, text_label, (x_min, y_min - 7), 
                             cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 0, 0), 2)
-        
-        # 1. Convert OpenCV BGR to RGB (NumPy array)
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        original_image_pil = Image.fromarray(rgb_frame)
-        
+
         # Grab dynamic hue bounds
         with shared_state.data_lock:
             current_hue_lower = shared_state.hue_green_lower
             current_hue_upper = shared_state.hue_green_upper
         
-        # 3. Perform blur and mask on the CPU with dynamic hues:
-        masked_output_tensor, mask_tensor = perform_cv2_blur_and_mask(original_image_pil, current_hue_lower, current_hue_upper)
-        
-        # 4. Convert the masked image result back to BGR for OpenCV display
-        # Move back to CPU, convert to NumPy, and swap RGB to BGR
-        masked_frame_rgb_pil = T.ToPILImage()(masked_output_tensor)           #  CPU
-        contoured_frame_bgr = cv2.cvtColor(np.array(masked_frame_rgb_pil), cv2.COLOR_RGB2BGR)
-        
-        # 5. --- CPU-BASED CONTOUR, CENTROID CALCULATION, AND COALESCING ---
-        mask_np = mask_tensor
+        # 4. Perform blur and mask directly on the native OpenCV BGR frame!
+        contoured_frame_bgr, mask_np = perform_cv2_blur_and_mask(frame, current_hue_lower, current_hue_upper)
+
+        if TIME_CALCS == True:
+            TIME_E = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+            
+#################################################################################################################
         
         '''
         This code snippet implements a custom software-based closed-loop feedback controller (specifically, a Proportional controller) designed to optimize the camera's exposure time dynamically. Instead of letting the camera evaluate the entire horizon, it optimizes the brightness specifically for the green plants in focus:
@@ -1033,7 +1204,11 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                     with shared_state.data_lock:
                         shared_state.camera_exposure_time = current_gui_exp_time
 
-##########################################################################################################
+        # Create a small 3x3 kernel
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+
+        # "Opening" removes small noise speckles from the background
+        mask_np = cv2.morphologyEx(mask_np, cv2.MORPH_OPEN, kernel)
 
         # Find contours
         contours, _ = cv2.findContours(mask_np, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -1042,23 +1217,28 @@ Camera stream initialized successfully. Starting manual frame processing loop...
         valid_contours = []
         
         for contour in contours:
-            M = cv2.moments(contour)
-    
-            # M["m00"] is the area of the contour
-            if M["m00"] != 0 and M["m00"] > MIN_CENTROID_AREA: 
+            # 1. Filter by area FIRST to prevent calculating moments on hundreds of noise pixels
+            if cv2.contourArea(contour) > MIN_CENTROID_AREA:
+                M = cv2.moments(contour)
         
-                # Calculate centroid coordinates
-                cX = int(M["m10"] / M["m00"])
-                cY = int(M["m01"] / M["m00"])
-        
-                # --- FILTER BY TUNNEL VISION ---
-                if actual_tunnel_left < cX < actual_tunnel_right:
-                    # Store results for valid contours
-                    individual_centroids.append((cX, cY))
-                    valid_contours.append(contour)
+                # M["m00"] is the area of the contour (double check)
+                if M["m00"] != 0: 
+            
+                    # Calculate centroid coordinates
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
+            
+                    # --- FILTER BY TUNNEL VISION ---
+                    if actual_tunnel_left < cX < actual_tunnel_right:
+                        # Store results for valid contours
+                        individual_centroids.append((cX, cY))
+                        valid_contours.append(contour)
 
+        if TIME_CALCS == True:
+            TIME_F = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
 
-##########################################################################################################
+#################################################################################################################
 
         # Coalesce (Merge) Centroids:
         centers_green = []
@@ -1136,8 +1316,6 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 # Round to 2 decimal places to keep the GUI slider looking clean
                 shared_state.confidence_threshold = round(current_gui_conf, 2)
 
-
-##########################################################################################################
         # Drawing: Draw contours on the processed frame (these will be blended)
         # Draw all valid contours (in bright red) on the MASKED/CONTOURED frame
         # This frame is the foreground for blending.
@@ -1163,11 +1341,16 @@ Camera stream initialized successfully. Starting manual frame processing loop...
         # Calculate the vertical midpoint (the y-coordinate)
         # mid_y = int(height / 2) # Already calculated above
 
+        if TIME_CALCS == True:
+            TIME_G = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+#################################################################################################################
 
-##########################################################################################################
         # DRAW CENTROIDS, LINES, AND LABELS ON FINAL BLENDED FRAME (Foreground) ---
         
         # Check for Alignment and Draw Lines ---
+        # Hard-cap the array to prevent exponential O(N^4) math bombs during motion blur
+        centers_green = centers_green[:8]
         num_detections_green = len(centers_green)
 
         if num_detections_green >= 2:
@@ -1207,7 +1390,6 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                             alignment_type = "Vertical" if is_near_vertical else "Horizontal"
                             # print(f"  ** Connected GREEN centers {i} and {j}. Alignment: {alignment_type}. Angle: {angle_deg:.2f}°")
 
-##########################################################################################################
         # DRAW CENTROIDS AND LABELS ON FINAL BLENDED FRAME
         # Draw the COALESCED centroids and labels on the final blended image so they are always visible
         for i, data in enumerate(coalesced_centroids):
@@ -1221,21 +1403,24 @@ Camera stream initialized successfully. Starting manual frame processing loop...
             label = f"Group {i} ({count} obj)"
             if DESKTOP_DISPLAY == True: cv2.putText(final_display_frame, label, (cX - 30, cY - 20),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-
-        # Add logic from test_torch_cpu_on_camera0_49.py here.
-##########################################################################################################
-##########################################################################################################
+                        
+        if TIME_CALCS == True:
+            TIME_H = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+            
+#################################################################################################################
 
         # --- LOGIC TO PRINT DIMENSIONS AND COORDINATES (Original logging kept) ---
         yolo_centers: List[Tuple[int, int]] = [] # Initialize list to store YOLO centers
-        for i in range(len(boxes)):
-            class_id = int(boxes.cls[i].cpu().item())
+        
+        # Loop through the pre-extracted arrays instead of len(boxes)
+        for i in range(len(yolo_classes)):
+            class_id = yolo_classes[i]
         
             # --- NEW LOGIC: Only proceed for classes 0 through 6 ---
             if 0 <= class_id <= 6:
-                # Get coordinates as a numpy array: [x_min, y_min, x_max, y_max]
-                coords = boxes.xyxy[i].cpu().numpy().astype(int).flatten()
-                x_min, y_min, x_max, y_max = coords
+                # Extract coordinates directly from the pre-built NumPy array
+                x_min, y_min, x_max, y_max = yolo_coords[i]
             
                 width = x_max - x_min
                 height = y_max - y_min
@@ -1244,7 +1429,9 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 cx = int((x_min + x_max) / 2)
                 cy = int((y_min + y_max) / 2)
             
-                yolo_centers.append((cx, cy)) # Store YOLO center
+                # Apply the tunnel vision bounds to YOLO
+                if actual_tunnel_left < cx < actual_tunnel_right:
+                    yolo_centers.append((cx, cy))
             
                 # label = class_names.get(class_id, "Unknown")
                 # confidence = boxes.conf[i].cpu().item()
@@ -1254,11 +1441,11 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 # print(f"  Coordinates (x_min, y_min): ({x_min}, {y_min})")
                 # print(f"  Coordinates (x_max, y_max): ({x_max}, {y_max})")
                 # print(f"  Dimensions (W x H): {width} x {height}")
-        
-##########################################################################################################
+
         # 4. --- LOGIC TO DRAW CONNECTING LINES BETWEEN YOLO BOX CENTERS (Blue) ---
         # Use the yolo_centers for angle analysis
-        centers_yolo = yolo_centers
+        # Hard-cap the array to prevent exponential math bombs
+        centers_yolo = yolo_centers[:8] # Limit to top 12 detections maximum
         num_detections_yolo = len(centers_yolo)
     
         if num_detections_yolo >= 2:
@@ -1299,7 +1486,6 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                             alignment_type = "Vertical" if is_near_vertical else "Horizontal"
                             # print(f"  ** Connected YOLO centers {i} and {j}. Alignment: {alignment_type}. Angle: {angle_deg:.2f}°")
 
-##########################################################################################################
         # --- INITIALIZATION ---
         # We'll find the centers first, then handle all drawing at the end to ensure correct layering.
         yolo_center_point = None
@@ -1311,20 +1497,13 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 points = list(points_tuple)
                 # (The grouping logic is extensive, so it's omitted here for brevity, but it's the same as your original code)
                 # ... grouping logic for x_groups and y_groups ...
-                x_coords = [p[0] for p in points]; y_coords = [p[1] for p in points]
-                x_groups = []; y_groups = []
-                for x in x_coords:
-                    found_group = False
-                    for group in x_groups:
-                        if abs(x - np.mean(group)) < AXIS_PROXIMITY_TOLERANCE:
-                            group.append(x); found_group = True; break
-                    if not found_group: x_groups.append([x])
-                for y in y_coords:
-                    found_group = False
-                    for group in y_groups:
-                        if abs(y - np.mean(group)) < AXIS_PROXIMITY_TOLERANCE:
-                            group.append(y); found_group = True; break
-                    if not found_group: y_groups.append([y])
+                
+                x_coords = [p[0] for p in points]
+                y_coords = [p[1] for p in points]
+    
+                # Pass the flat coordinate lists, NOT the group lists
+                x_groups = group_coordinates_fast(x_coords, AXIS_PROXIMITY_TOLERANCE)
+                y_groups = group_coordinates_fast(y_coords, AXIS_PROXIMITY_TOLERANCE)
 
                 is_quad_found = (len(x_groups) == 2 and all(len(g) == 2 for g in x_groups) and len(y_groups) == 2 and all(len(g) == 2 for g in y_groups))
                 if is_quad_found:
@@ -1334,7 +1513,7 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                     yolo_center_point = (center_x, center_y) # Store the point, don't draw yet
                     # print(f"  *** Found BLUE NEAR-BOX (4 points) at center: {yolo_center_point}. ***")
                     break
-        if TIME_CALCS == True: time_T = time.time()
+
         if not yolo_center_point and num_detections_yolo >= 3:
             for points_tuple in itertools.combinations(centers_yolo, 3):
                 points = list(points_tuple)
@@ -1362,26 +1541,23 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                     yolo_center_point = (center_x, center_y) # Store the point, don't draw yet
                     # print(f"  *** Found BLUE L-SHAPE (3 points), interpolated center: {yolo_center_point}. ***")
                     break
-##########################################################################################################
+                    
+        if TIME_CALCS == True:
+            TIME_I = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+#################################################################################################################
+
         # 5.5 --- GREEN CENTER DETECTION ---
         if num_detections_green >= 4:
             for points_tuple in itertools.combinations(centers_green, 4):
                 points = list(points_tuple)
                 # ... grouping logic for x_groups and y_groups ...
-                x_coords = [p[0] for p in points]; y_coords = [p[1] for p in points]
-                x_groups = []; y_groups = []
-                for x in x_coords:
-                    found_group = False
-                    for group in x_groups:
-                        if abs(x - np.mean(group)) < AXIS_PROXIMITY_TOLERANCE:
-                            group.append(x); found_group = True; break
-                    if not found_group: x_groups.append([x])
-                for y in y_coords:
-                    found_group = False
-                    for group in y_groups:
-                        if abs(y - np.mean(group)) < AXIS_PROXIMITY_TOLERANCE:
-                            group.append(y); found_group = True; break
-                    if not found_group: y_groups.append([y])
+                x_coords = [p[0] for p in points]
+                y_coords = [p[1] for p in points]
+    
+                # Pass the flat coordinate lists, NOT the group lists
+                x_groups = group_coordinates_fast(x_coords, AXIS_PROXIMITY_TOLERANCE)
+                y_groups = group_coordinates_fast(y_coords, AXIS_PROXIMITY_TOLERANCE)
             
                 is_quad_found = (len(x_groups) == 2 and all(len(g) == 2 for g in x_groups) and len(y_groups) == 2 and all(len(g) == 2 for g in y_groups))
                 if is_quad_found:
@@ -1392,7 +1568,6 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                     # print(f"  *** Found GREEN NEAR-BOX (4 points) at center: {green_center_point}. ***")
                     break
 
-        if TIME_CALCS == True: time_V = time.time()
         if not green_center_point and num_detections_green >= 3:
             for points_tuple in itertools.combinations(centers_green, 3):
                 points = list(points_tuple)
@@ -1420,10 +1595,13 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                     green_center_point = (center_x, center_y) # Store the point, don't draw yet
                     # print(f"  *** Found GREEN L-SHAPE (3 points), interpolated center: {green_center_point}. ***")
                     break
-                    
-        if TIME_CALCS == True: time_W = time.time()
+        
+        if TIME_CALCS == True:
+            TIME_J = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
 
-##########################################################################################################
+#################################################################################################################
+
         # --- 6. FINAL DRAWING LOGIC (PURPLE SQUARE & CIRCLES) ---
         purple_square_center = None
     
@@ -1463,33 +1641,40 @@ Camera stream initialized successfully. Starting manual frame processing loop...
             with shared_state.data_lock:
                 auto_weed_state = shared_state.auto_weed_enabled
                 
-            # Only proceed if Auto-Weed is ON *AND* we actually have a valid tracking target
-            if auto_weed_state is True and purple_square_center is not None:
-                # print("frame_width/2: ", frame_width/2)
-                # print("purple_square_center x: ", purple_square_center[0])
+            # Only proceed if Auto-Weed is ON
+            if auto_weed_state is True:
                 
-                ch12_data = 992 # Default to dead-center
-                
-                # If target is to the right of the center zone (1% deadband)
-                if purple_square_center[0] < (frame_width/2 - frame_width/200):
-                    ch12_data = 1200
-                    print("Move to the right !!!")
-                # If target is to the left of the center zone (1% deadband)
-                elif purple_square_center[0] > (frame_width/2 + frame_width/200):
-                    ch12_data = 800
-                    print("Move to the left !!!")
+                # Check if we have a valid tracking target
+                if purple_square_center is not None:
+                    ch12_data = 992 # Start with dead-center
 
-                # Safely overwrite the shared state variable so the MCU thread can read it
+                    # Define the adjusted physical center of the machine
+                    adjusted_center = (frame_width / 2) + current_x_axis_adjust
+                    deadband = frame_width / 100
+
+                    # If target is to the right of the deadband
+                    if purple_square_center[0] < (adjusted_center - deadband):
+                        ch12_data = 1200
+                        print("Move to the right !!! ", current_x_axis_adjust)
+                    # If target is to the left of the deadband
+                    elif purple_square_center[0] > (adjusted_center + deadband):
+                        ch12_data = 800
+                        print("Move to the left !!! ", current_x_axis_adjust)
+                
+                # If target is lost (purple_square_center is None)
+                else:
+                    ch12_data = 992 # Force stop to stop rogue movement
+
                 with shared_state.data_lock:
                     shared_state.ch12_data = ch12_data
 
-            
-
-        if TIME_CALCS == True: time_X = time.time()
         min_time_delta_threshold = 3.0
 
+        if TIME_CALCS == True:
+            TIME_K = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+#################################################################################################################
 
-##########################################################################################################
         # Crossing Detection and Epoch Time Output (Using System Time) for green ---
         if green_center_point is not None:
             # Use the 'py' variable determined in the logic block above
@@ -1557,7 +1742,12 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                     # LAST_CROSSING_EPOCH_TIME_GREEN
                     # LAST_POSITION_BELOW_GREEN
 
-##########################################################################################################
+        if TIME_CALCS == True:
+            TIME_L = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+
+#################################################################################################################
+
         # Crossing Detection and Epoch Time Output (Using System Time) for yolo ---
         if yolo_center_point is not None:
             # Use the 'py' variable determined in the logic block above
@@ -1624,10 +1814,18 @@ Camera stream initialized successfully. Starting manual frame processing loop...
 
             # Update the position state for the next frame
             # LAST_POSITION_BELOW = is_currently_below
-            LAST_POSITION_BELOW_GREEN = is_currently_below_green
-            LAST_POSITION_BELOW_YOLO= is_currently_below_yolo
+            try:
+                LAST_POSITION_BELOW_GREEN = is_currently_below_green
+                LAST_POSITION_BELOW_YOLO= is_currently_below_yolo
+            except:
+                pass
 
-##########################################################################################################
+        if TIME_CALCS == True:
+            TIME_M = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+
+#################################################################################################################
+
         # Check AVERAGED_TIME_DELTA_ARRAY for double and triple entries:
         # Create a for loop:
         duplicate_timestamp = True
@@ -1718,8 +1916,13 @@ Camera stream initialized successfully. Starting manual frame processing loop...
 
         except:
             pass
-            
-###############################################################################################################################################
+
+        if TIME_CALCS == True:
+            TIME_N = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+
+#################################################################################################################
+
         # Weights must add up to 1.0:
         weight_a5 = 0.3
         weight_b5 = 0.25
@@ -1760,11 +1963,13 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 LIGHT_BULB_FLASH_DELTA_ARRAY.append((current_rel_time, actual_flash_delta))
 
                 # --- Debounce LIGHT_BULB_FLASH_DELTA_ARRAY ---
-                # Rebuild the array in-place, keeping only entries where the delta is >= DEBOUNCE_TIME
-                LIGHT_BULB_FLASH_DELTA_ARRAY[:] = [
+                # Safely rebuild the array without using list slice assignment on a deque
+                valid_flashes = [
                     pair for pair in LIGHT_BULB_FLASH_DELTA_ARRAY 
                     if pair[1] >= DEBOUNCE_TIME
                 ]
+                LIGHT_BULB_FLASH_DELTA_ARRAY.clear()
+                LIGHT_BULB_FLASH_DELTA_ARRAY.extend(valid_flashes)
 
                 
                 # ADD THIS TO TRIGGER GUI:
@@ -1815,29 +2020,20 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 if RECORD_GRAPH_DATA:
                     graph_file_path = '/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/graph_data.txt'
     
-                    # Bundle the requested time delta arrays into a structured dictionary
-                    # "GREEN_TIME_DELTA_ARRAY": GREEN_TIME_DELTA_ARRAY,
-                    # "YOLO_TIME_DELTA_ARRAY": YOLO_TIME_DELTA_ARRAY,
                     data_to_record = {
-                        "GREEN_TIME_DELTA_ARRAY_FILTERED": GREEN_TIME_DELTA_ARRAY_FILTERED,
-                        "YOLO_TIME_DELTA_ARRAY_FILTERED": YOLO_TIME_DELTA_ARRAY_FILTERED,
-                        "AVERAGED_TIME_DELTA_ARRAY": AVERAGED_TIME_DELTA_ARRAY,
-                        "PREDICTED_TIME_DELTA_ARRAY": PREDICTED_TIME_DELTA_ARRAY,
-                        "LIGHT_BULB_FLASH_DELTA_ARRAY": LIGHT_BULB_FLASH_DELTA_ARRAY
+                        "GREEN_TIME_DELTA_ARRAY_FILTERED": list(GREEN_TIME_DELTA_ARRAY_FILTERED),
+                        "YOLO_TIME_DELTA_ARRAY_FILTERED": list(YOLO_TIME_DELTA_ARRAY_FILTERED),
+                        "AVERAGED_TIME_DELTA_ARRAY": list(AVERAGED_TIME_DELTA_ARRAY),
+                        "PREDICTED_TIME_DELTA_ARRAY": list(PREDICTED_TIME_DELTA_ARRAY),
+                        "LIGHT_BULB_FLASH_DELTA_ARRAY": list(LIGHT_BULB_FLASH_DELTA_ARRAY)
                     }
     
                     try:
-                        # print("Try to record graph data ....")
-                        # Ensure target directory exists before writing
                         os.makedirs(os.path.dirname(graph_file_path), exist_ok=True)
-        
-                        # Open and overwrite the text file with the latest structured data using JSON
                         with open(graph_file_path, 'w') as f:
-                            json.dump(data_to_record, f, indent=4)
-            
-                        # print(f"[Data Logger] Graph data successfully updated at: {graph_file_path}")
+                            json.dump(data_to_record, f) # Fast single-line write without indent
                     except Exception as e:
-                        print(f"[Data Logger] Failed to save graph data: {e}")
+                        print(f"[Vision Error] Failed to record graph data: {e}")
 
                 first_missing = False
                 second_missing = False
@@ -1867,12 +2063,14 @@ Camera stream initialized successfully. Starting manual frame processing loop...
             
         # Reset flag:
         averageCalculated = False
-                
-################################################################################################################################################################
+
+        if TIME_CALCS == True:
+            TIME_O = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+
+#################################################################################################################
 
         # --- DRAW EVERYTHING (in the correct order) ---
-
-        if TIME_CALCS == True: time_Y = time.time()
         # 1. Draw the purple square FIRST so it's in the background
         if purple_square_center:
             SQUARE_HALF_SIDE = 20 # Make it slightly larger than the circle radius of 15
@@ -1905,18 +2103,26 @@ Camera stream initialized successfully. Starting manual frame processing loop...
             # Reset yellow flash
             YELLOW_FLASH = False
 
-##########################################################################################################
+        if TIME_CALCS == True:
+            TIME_P = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+
+#################################################################################################################
 
         # Display the frame with detections
         # Using result.plot() to get the image frame with boxes drawn on it
         # frame_with_detections = result.plot()
         # frame_resized = cv2.resize(frame_with_detections, (DISPLAY_WIDTH, DISPLAY_HEIGHT))
-        frame_resized = cv2.resize(final_display_frame, (DISPLAY_WIDTH, DISPLAY_HEIGHT))
+
         
         # TUNNEL VISION VERTICAL LINES and trigger lines DRAWING:
         if DESKTOP_DISPLAY == True:
+            # frame_resized = cv2.resize(final_display_frame, (DISPLAY_WIDTH, DISPLAY_HEIGHT))
+            frame_resized = cv2.resize(final_display_frame, (DISPLAY_WIDTH, DISPLAY_HEIGHT), interpolation=cv2.INTER_AREA)
             # Middle trigger line:
             cv2.line(frame_resized, (0, int(DISPLAY_HEIGHT/2)), (DISPLAY_WIDTH, int(DISPLAY_HEIGHT/2)), (0, 0, 255), 2)
+            # Vertical mid frame line:
+            cv2.line(frame_resized, (int(DISPLAY_WIDTH/2), 0), (int(DISPLAY_WIDTH/2), DISPLAY_HEIGHT), (0, 0, 255), 2)
             # Left vertical line (thin, thickness=1)
             cv2.line(frame_resized, (TUNNEL_VISION, 0), (TUNNEL_VISION, DISPLAY_HEIGHT), (0, 0, 255), 2)
             # Right vertical line (thin, thickness=1)
@@ -1932,34 +2138,107 @@ Camera stream initialized successfully. Starting manual frame processing loop...
             raw_video_writer.write(frame)
         # ---------------------------------------------
        
-        # OpenCV uses BGR natively, Tkinter requires RGB
-        cv2image = cv2.cvtColor(frame_resized, cv2.COLOR_BGR2RGB)
-            
-        # Convert to PIL Image ONLY
-        img = Image.fromarray(cv2image)
-
-        with shared_state.data_lock:
-            shared_state.latest_frame = img # Pass the PIL image, not ImageTk
+        # NB. OpenCV uses BGR natively, Tkinter requires RGB
+        # ---------------------------------------------
+        # GUI FRAME HANDOFF OPTIMIZATION
+        # Pass the raw BGR array to offload color conversion to weedinator_gui.py
+        # ---------------------------------------------
+        if frame_count % VISION_TO_GUI_FRAME_DECIMATOR == 0:
+            with shared_state.data_lock:
+                # Pass a copy of the raw BGR NumPy array directly to shared state. weedinator_gui.py will
+                # convert the frame for tkinter compatibility.
+                shared_state.latest_frame = frame_resized.copy()
 
         # --- Update shared collections for live graph animation ---
         with shared_state.data_lock:
-            # Sync the event-driven local arrays to the shared state
+            # Sync the event-driven local arrays to the shared state by casting to list first
             shared_state.graph_green_filtered.clear()
-            shared_state.graph_green_filtered.extend(GREEN_TIME_DELTA_ARRAY_FILTERED[-shared_state.MAX_GRAPH_POINTS:])
+            shared_state.graph_green_filtered.extend(list(GREEN_TIME_DELTA_ARRAY_FILTERED)[-shared_state.MAX_GRAPH_POINTS:])
             
             shared_state.graph_yolo_filtered.clear()
-            shared_state.graph_yolo_filtered.extend(YOLO_TIME_DELTA_ARRAY_FILTERED[-shared_state.MAX_GRAPH_POINTS:])
+            shared_state.graph_yolo_filtered.extend(list(YOLO_TIME_DELTA_ARRAY_FILTERED)[-shared_state.MAX_GRAPH_POINTS:])
             
             shared_state.graph_averaged.clear()
-            shared_state.graph_averaged.extend(AVERAGED_TIME_DELTA_ARRAY[-shared_state.MAX_GRAPH_POINTS:])
+            shared_state.graph_averaged.extend(list(AVERAGED_TIME_DELTA_ARRAY)[-shared_state.MAX_GRAPH_POINTS:])
             
             shared_state.graph_predicted.clear()
-            shared_state.graph_predicted.extend(PREDICTED_TIME_DELTA_ARRAY[-shared_state.MAX_GRAPH_POINTS:])
+            shared_state.graph_predicted.extend(list(PREDICTED_TIME_DELTA_ARRAY)[-shared_state.MAX_GRAPH_POINTS:])
             
             shared_state.graph_light_bulb_flash.clear()
-            shared_state.graph_light_bulb_flash.extend(LIGHT_BULB_FLASH_DELTA_ARRAY[-shared_state.MAX_GRAPH_POINTS:])
-            
+            shared_state.graph_light_bulb_flash.extend(list(LIGHT_BULB_FLASH_DELTA_ARRAY)[-shared_state.MAX_GRAPH_POINTS:])
         time.sleep(1/CAMERA_FRAME_RATE)
+        
+
+ 
+        # Save loop duration to the GUI via shared state AND append to the 2D array
+        with shared_state.data_lock:
+            shared_state.vision_loop_time = loop_duration
+            shared_state.loop_speed_array.append((
+                elapsed_app_time, 
+                loop_duration,
+                # NOT TIME_A !!!
+                TIME_B,
+                TIME_C,
+                TIME_D,
+                TIME_E,
+                TIME_F,
+                TIME_G,
+                TIME_H,
+                TIME_I,
+                TIME_J,
+                TIME_K,
+                TIME_L,
+                TIME_M,
+                TIME_N,
+                TIME_O,
+                TIME_P,
+                TIME_Q,
+                cpu_usages[0],
+                cpu_usages[1],
+                cpu_usages[2],
+                cpu_usages[3],
+                cpu_usages[4],
+                cpu_usages[5]
+            ))
+
+            # --- LOGIC TO RECORD ANALYSIS DATA ---
+            shared_state.data_for_analysis.append((
+                elapsed_app_time,
+                loop_duration,
+                ch12_data,
+                shared_state.encImplWheelVal,
+                shared_state.encHorizActVal,
+                shared_state.encDrawbarActVal,
+                shared_state.auto_weed_enabled,
+                cpu_temp,
+                gpu_temp,
+                ao_temp
+            ))
+
+            # OPTIMIZATION: Keep only the latest 2,000 data points in memory to avoid unbounded list growth
+            if len(shared_state.data_for_analysis) > 2000:
+                shared_state.data_for_analysis = shared_state.data_for_analysis[-2000:]
+            
+        if TIME_CALCS == True:
+            TIME_Q = time.time() - t_ref
+            t_ref = time.time()  # Reset reference timestamp for next section
+
+@profile
+def update_camera_frame():
+    if ENABLE_PROFILER and lp is not None:
+        # Wrap process_results_loop programmatically with the LineProfiler instance
+        profiled_loop = lp(process_results_loop)
+        profiled_loop()
+    else:
+        # Run normally without the profiler wrapper
+        process_results_loop()
+
+#################################################################################################################
+
+
+#################################################################################################################
+            
+
         
     cap.release()
         

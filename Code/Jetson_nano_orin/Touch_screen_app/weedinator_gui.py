@@ -10,9 +10,12 @@ import cv2
 from PIL import Image, ImageTk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
 
 
 # send_data_state = False
+
+RECORD_GRAPH_DATA = False # Set to False to suppress graph and use yellow placeholder
 
 def gui_thread():
 
@@ -53,6 +56,7 @@ def gui_thread():
         path_backlight = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/camera_backlight_comp.txt"
         path_flick = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/camera_flick_mode.txt"
         path_simulate = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/simulate_status.txt"
+        path_x_adjust = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/x_axis_adjust.txt"
         
         # Set defaults in case files don't exist yet
         val1, val2 = 0, 0 
@@ -73,6 +77,7 @@ def gui_thread():
         val_backlight = 0
         val_flick = 0
         val_simulate = True
+        val_x_adjust = 0
         
         try:
             if os.path.exists(path1):
@@ -130,6 +135,8 @@ def gui_thread():
                 with open(path_backlight, "r") as f: val_backlight = int(f.read().strip())
             if os.path.exists(path_simulate):
                 with open(path_simulate, "r") as f: val_simulate = (f.read().strip() == "True")
+            if os.path.exists(path_x_adjust):
+                with open(path_x_adjust, "r") as f: val_x_adjust = int(f.read().strip())
                 
 
             print(f"Loaded persistent settings: Slider1={val1}, Slider2={val2}, Saturation={val_sat}, Gain={val_gain}, Confidence={val_conf}, Coalesce={val_coalesce}")
@@ -158,6 +165,7 @@ def gui_thread():
             shared_state.camera_backlight_comp = val_backlight
             shared_state.camera_flick_mode = val_flick
             shared_state.USE_CAMERA = val_simulate
+            shared_state.X_AXIS_ADJUST = val_x_adjust
 
     # Execute the load immediately
     load_slider_values()
@@ -200,6 +208,7 @@ def gui_thread():
             val_backlight = str(shared_state.camera_backlight_comp)
             val_flick = str(shared_state.camera_flick_mode)
             val_simulate = str(shared_state.USE_CAMERA)
+            val_x_adjust = str(shared_state.X_AXIS_ADJUST)
             
         paths = {
             "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/slider_1_val.txt": val1,
@@ -221,7 +230,8 @@ def gui_thread():
             "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/camera_denoise.txt": val_denoise,
             "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/camera_backlight_comp.txt": val_backlight,
             "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/camera_flick_mode.txt": val_flick,
-            "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/simulate_status.txt": val_simulate
+            "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/simulate_status.txt": val_simulate,
+            "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/x_axis_adjust.txt": val_x_adjust
         }
         
         try:
@@ -268,6 +278,40 @@ def gui_thread():
     def quit_app():
         if messagebox.askyesno("Quit", "Stop the Weedinator app?"):
             save_slider_values()  
+            
+            # --- Save the loop speed data to a text file ---
+            try:
+                file_path = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/loop_speed_data.txt"
+                file_path_2 = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/data_for_analysis.txt"
+                
+                # Safely copy the data out of the shared state
+                with shared_state.data_lock:
+                    loop_speed_data_to_save = list(shared_state.loop_speed_array)
+                    # print("loop_speed_data_to_save: ",loop_speed_data_to_save)
+                    analysis_data_copy = list(shared_state.data_for_analysis)
+                    
+                # Write to text file (CSV format: elapsed_time_sec, loop_duration_sec)
+                with open(file_path, "w") as f:
+                    # Update header to include CPU cores
+                    f.write("elapsed_time_sec, loop_duration_sec, TIME_B, TIME_C, TIME_D, TIME_E, TIME_F, TIME_G, TIME_H, TIME_I, TIME_J, TIME_K, TIME_L, TIME_M, TIME_N, TIME_O, TIME_P, TIME_Q, CPU_1, CPU_2, CPU_3, CPU_4, CPU_5, CPU_6\n")
+                    
+                    # Write data rows, expanding to index 23
+                    for row in loop_speed_data_to_save:
+                        f.write(f"{row[0]},{row[1]},{row[2]},{row[3]},{row[4]},{row[5]},{row[6]},{row[7]},{row[8]},{row[9]},{row[10]},{row[11]},{row[12]},{row[13]},{row[14]},{row[15]},{row[16]},{row[17]},{row[18]},{row[19]},{row[20]},{row[21]},{row[22]},{row[23]}\n")
+                        
+                with open(file_path_2, "w") as f:
+                    # Write header row
+                    f.write("elapsed_app_time,loop_duration,ch12_data,encImplWheelVal,encHorizActVal,encDrawbarActVal,auto_weed_enabled,cpu_temp,gpu_temp,ao_temp\n")
+                
+                    # Write data rows
+                    for row in analysis_data_copy:
+                        f.write(f"{row[0]},{row[1]},{row[2]},{row[3]},{row[4]},{row[5]},{row[6]},{row[7]},{row[8]},{row[9]}\n")
+
+                print(f"Successfully saved {len(loop_speed_data_to_save)} loop speed records to {file_path}")
+                print(f"[GUI] Successfully saved {len(analysis_data_copy)} records to {file_path_2}")
+            except Exception as e:
+                print(f"Error saving loop speed data: {e}")
+            # ----------------------------------------------------
             # cleanup_resources()
             root.destroy()
             os._exit(0)
@@ -284,6 +328,10 @@ def gui_thread():
             save_slider_values()  
             # cleanup_resources()
             os.system("sudo shutdown -h now")
+            
+    def update_x_axis_adjust(val):
+        with shared_state.data_lock:
+            shared_state.X_AXIS_ADJUST = int(val)
 
     def update_slider1(val):
         with shared_state.data_lock:
@@ -785,36 +833,47 @@ def gui_thread():
 
     # Create a pure object-oriented Figure (safe for threads)
     # print("Attempting to produce figure:")
-    fig = Figure(figsize=(6.0, 1.4), dpi=100, facecolor="#1a1a1a")
-    fig.set_tight_layout(True) # Force the internal plot to fill all edge-to-edge space
-    # print("Attempting to produce ax:")
-    ax = fig.add_subplot(111)
     
-    ax.set_facecolor("#111111")
-    ax.tick_params(colors='white', labelsize=8)
-    ax.grid(True, color='lightgray', linestyle='--')
-    ax.set_ylabel("Time Delta (s)", color='white', fontsize=9)
-    ax.set_xlabel("Time Since Start (Seconds)", color='white', fontsize=9)
+    if RECORD_GRAPH_DATA:
+        fig = Figure(figsize=(6.0, 1.4), dpi=100, facecolor="#1a1a1a")
+        fig.set_tight_layout(True) # Force the internal plot to fill all edge-to-edge space
+        # print("Attempting to produce ax:")
+        ax = fig.add_subplot(111)
     
-    # --- ADD THIS LINE TO DISABLE THE SHIFTING OFFSET ---
-    ax.ticklabel_format(useOffset=False, style='plain', axis='x')
+        ax.set_facecolor("#111111")
+        ax.tick_params(colors='white', labelsize=8)
+        ax.grid(True, color='lightgray', linestyle='--')
+        ax.set_ylabel("Time Delta (s)", color='white', fontsize=9)
+        ax.set_xlabel("Time Since Start (Seconds)", color='white', fontsize=9)
     
-    # Initialize blank plot lines
-    line_green, = ax.plot([], [], color='green', linestyle='-', linewidth=1, label='Green Filtered')
-    line_yolo, = ax.plot([], [], color='blue', linestyle='-', linewidth=1, label='YOLO Filtered')
-    line_averaged, = ax.plot([], [], color='magenta', linestyle='-', linewidth=1, label='Averaged')
-    line_predicted, = ax.plot([], [], color='red', linestyle='-', linewidth=1, label='Predicted', marker='o')
-    line_light_bulb, = ax.plot([], [], color='yellow', label='Light Bulb Flash', linewidth=1, marker='o')
+        # --- ADD THIS LINE TO DISABLE THE SHIFTING OFFSET ---
+        ax.ticklabel_format(useOffset=False, style='plain', axis='x')
     
-    # Initialize the legend in the correct 'upper left' position
-    legend = ax.legend(loc='upper left', facecolor='#2c3e50', edgecolor='#7f8c8d', fontsize=8)
-    for text in legend.get_texts():
-        text.set_color('white')
+        # Initialize blank plot lines
+        line_green, = ax.plot([], [], color='green', linestyle='-', linewidth=1, label='Green Filtered')
+        line_yolo, = ax.plot([], [], color='blue', linestyle='-', linewidth=1, label='YOLO Filtered')
+        line_averaged, = ax.plot([], [], color='magenta', linestyle='-', linewidth=1, label='Averaged')
+        line_predicted, = ax.plot([], [], color='red', linestyle='-', linewidth=1, label='Predicted', marker='o')
+        line_light_bulb, = ax.plot([], [], color='yellow', label='Light Bulb Flash', linewidth=1, marker='o')
+    
+        # Initialize the legend in the correct 'upper left' position
+        legend = ax.legend(loc='upper left', facecolor='#2c3e50', edgecolor='#7f8c8d', fontsize=8)
+        for text in legend.get_texts():
+            text.set_color('white')
 
-    # print("Attempting to produce canvas:")
-    canvas = FigureCanvasTkAgg(fig, master=graph_content_frame)
-    canvas_widget = canvas.get_tk_widget()
-    canvas_widget.pack(side='top', expand=True, fill='both', pady=(0, 10))
+        # print("Attempting to produce canvas:")
+        canvas = FigureCanvasTkAgg(fig, master=graph_content_frame)
+        canvas_widget = canvas.get_tk_widget()
+        canvas_widget.pack(side='top', expand=True, fill='both', pady=(0, 10))
+    else:
+            # Placeholder: Solid yellow square frame
+            yellow_placeholder = tk.Frame(
+                graph_content_frame, 
+                bg="grey", 
+                width=200, 
+                height=200
+            )
+            yellow_placeholder.pack(fill=tk.BOTH, expand=True)
 
     # Create a container frame to hold both the lightbulb and the video feed side-by-side
     # Added highlight attributes to create a clean, thin white border
@@ -844,12 +903,23 @@ def gui_thread():
     btn_auto_weed.pack(side='top', pady=(0, 10))
 
     # Create the unique Canvas just for the Light Bulb indicator
-    bulb_canvas = tk.Canvas(bulb_container, width=500, height=500, bg="#1a1a1a", highlightthickness=0)
+    bulb_canvas = tk.Canvas(bulb_container, width=700, height=500, bg="#1a1a1a", highlightthickness=0)
     bulb_canvas.pack(side='top')
     
     # Create the Label to display the Expected Time Delta
     lbl_expected_delta = tk.Label(bulb_container, text="Expected Time Delta = 0.000 seconds", font=status_font, fg="white", bg="#1a1a1a")
     lbl_expected_delta.pack(side='top', pady=(5, 0))
+    
+    # Create the Label to display the Vision Loop Time
+    lbl_loop_time = tk.Label(bulb_container, text="Time since last loop = 0.0000 seconds", font=status_font, fg="white", bg="#1a1a1a")
+    lbl_loop_time.pack(side='top', pady=(5, 0))
+    
+    # --- X AXIS ADJUSTMENT SLIDER ---
+    x_axis_slider = tk.Scale(bulb_container, from_=-300, to=300, orient='horizontal', 
+                             label="X AXIS ADJUSTMENT", font=slider_font, fg="#aaaaaa", bg="#1a1a1a", 
+                             troughcolor="#444444", highlightthickness=0, command=update_x_axis_adjust, sliderlength=220, width=50)
+    x_axis_slider.set(shared_state.X_AXIS_ADJUST)
+    x_axis_slider.pack(fill='x', pady=(10, 0), padx=10)
     
     # --- Cosmetic Decoration: Bayonet Mounting ---
     # Metallic gray main cap
@@ -1040,10 +1110,12 @@ def gui_thread():
 
             # Update the Video Feed Label:
             if shared_state.latest_frame is not None:
-                import numpy as np
+                
+                # 0. Convert BGR to RGB on the GUI thread
+                cv2image = cv2.cvtColor(shared_state.latest_frame, cv2.COLOR_BGR2RGB)
                 
                 # 1. Convert the PIL Image to an OpenCV-compatible NumPy array
-                cv_img = np.array(shared_state.latest_frame)
+                cv_img = np.array(cv2image)
                 height, width, _ = cv_img.shape
                 
                 # 2. Use cv2 to draw a white square around the outer boundary
@@ -1097,6 +1169,7 @@ def gui_thread():
         with shared_state.data_lock:
             # --- UPDATE THE TEXT DYNAMICALLY ---
             lbl_expected_delta.config(text=f"Expected Time Delta = {shared_state.expected_time_delta_val:.3f} seconds")
+            lbl_loop_time.config(text=f"Camera loop speed = {shared_state.vision_loop_time:.4f} seconds")
             # Check if the vision thread triggered a yellow flash
             if getattr(shared_state, 'yellow_flash_event', False):
                 # Illuminate the bulb yellow
@@ -1119,37 +1192,38 @@ def gui_thread():
             data_pred = list(shared_state.graph_predicted)
             data_flash = list(shared_state.graph_light_bulb_flash)
 
-        # Unpack tuples into separate X (epoch time) and Y (delta) arrays
-        x_green, y_green = zip(*data_green) if data_green else ([], [])
-        x_yolo, y_yolo = zip(*data_yolo) if data_yolo else ([], [])
-        x_avg, y_avg = zip(*data_avg) if data_avg else ([], [])
-        x_pred, y_pred = zip(*data_pred) if data_pred else ([], [])
-        x_flash, y_flash = zip(*data_flash) if data_flash else ([], [])
+        if RECORD_GRAPH_DATA:
+            # Unpack tuples into separate X (epoch time) and Y (delta) arrays
+            x_green, y_green = zip(*data_green) if data_green else ([], [])
+            x_yolo, y_yolo = zip(*data_yolo) if data_yolo else ([], [])
+            x_avg, y_avg = zip(*data_avg) if data_avg else ([], [])
+            x_pred, y_pred = zip(*data_pred) if data_pred else ([], [])
+            x_flash, y_flash = zip(*data_flash) if data_flash else ([], [])
 
-        # Update artists
-        line_green.set_data(x_green, y_green)
-        line_yolo.set_data(x_yolo, y_yolo)
-        line_averaged.set_data(x_avg, y_avg)
-        line_predicted.set_data(x_pred, y_pred)
-        line_light_bulb.set_data(x_flash, y_flash)
+            # Update artists
+            line_green.set_data(x_green, y_green)
+            line_yolo.set_data(x_yolo, y_yolo)
+            line_averaged.set_data(x_avg, y_avg)
+            line_predicted.set_data(x_pred, y_pred)
+            line_light_bulb.set_data(x_flash, y_flash)
 
-        # Dynamically scale limits based on actual epoch times (matches original logic)
-        all_x = list(x_green) + list(x_yolo) + list(x_avg) + list(x_pred) + list(x_flash)
-        all_y = list(y_green) + list(y_yolo) + list(y_avg) + list(y_pred) + list(y_flash)
+            # Dynamically scale limits based on actual epoch times (matches original logic)
+            all_x = list(x_green) + list(x_yolo) + list(x_avg) + list(x_pred) + list(x_flash)
+            all_y = list(y_green) + list(y_yolo) + list(y_avg) + list(y_pred) + list(y_flash)
 
-        if all_x and all_y:
-            x_min, x_max = min(all_x), max(all_x)
-            y_min, y_max = min(all_y), max(all_y)
+            if all_x and all_y:
+                x_min, x_max = min(all_x), max(all_x)
+                y_min, y_max = min(all_y), max(all_y)
             
-            # Add a small buffer to the limits
-            ax.set_xlim(x_min - 0.1, x_max + 0.1)
-            ax.set_ylim(y_min - 0.1, y_max + 0.1)
+                # Add a small buffer to the limits
+                ax.set_xlim(x_min - 0.1, x_max + 0.1)
+                ax.set_ylim(y_min - 0.1, y_max + 0.1)
             
-            # FORCE LEGEND POSITION HERE ON EVERY REDRAW
-            # ax.legend(loc='upper left', facecolor='#2c3e50', edgecolor='#7f8c8d', labelcolor='white')
+                # FORCE LEGEND POSITION HERE ON EVERY REDRAW
+                # ax.legend(loc='upper left', facecolor='#2c3e50', edgecolor='#7f8c8d', labelcolor='white')
             
-            # Trigger a GUI redraw
-            canvas.draw_idle()
+                # Trigger a GUI redraw
+                canvas.draw_idle()
 
         root.after(200, update_gui)
 
