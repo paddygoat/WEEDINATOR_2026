@@ -185,6 +185,8 @@ def gui_thread():
     status_font = tkfont.Font(family="Helvetica", size=18, weight="bold")
     button_font = tkfont.Font(family="Helvetica", size=22, weight="bold")
     slider_font = tkfont.Font(family="Helvetica", size=10, weight="bold")
+    dropdown_button_font = tkfont.Font(family="Helvetica", size=22, weight="bold")
+    dropdown_menu_font = tkfont.Font(family="Helvetica", size=30, weight="bold")
     
     def save_slider_values():
         """Overwrites the text files with current slider values on a single line."""
@@ -252,6 +254,16 @@ def gui_thread():
         else:
             btn_auto_weed.config(text="AUTO WEED: OFF", bg="#e74c3c", activebackground="#e74c3c")
             
+    def toggle_camera_start():
+        with shared_state.data_lock:
+            shared_state.camera_start = not shared_state.camera_start
+            current_state = shared_state.camera_start
+            
+        if current_state:
+            btn_camera_start.config(text="CAMERA: ON", bg="#2ecc71", activebackground="#2ecc71")
+        else:
+            btn_camera_start.config(text="CAMERA: OFF", bg="#e74c3c", activebackground="#e74c3c")
+            
     def toggle_simulate_mode():
         with shared_state.data_lock:
             # Flip the boolean (True = Camera, False = Simulate/Video)
@@ -293,11 +305,11 @@ def gui_thread():
                 # Write to text file (CSV format: elapsed_time_sec, loop_duration_sec)
                 with open(file_path, "w") as f:
                     # Update header to include CPU cores
-                    f.write("elapsed_time_sec, loop_duration_sec, TIME_B, TIME_C, TIME_D, TIME_E, TIME_F, TIME_G, TIME_H, TIME_I, TIME_J, TIME_K, TIME_L, TIME_M, TIME_N, TIME_O, TIME_P, TIME_Q, CPU_1, CPU_2, CPU_3, CPU_4, CPU_5, CPU_6\n")
+                    f.write("elapsed_time_sec, loop_duration_sec, TIME_B, TIME_C, TIME_D, TIME_E, TIME_F, TIME_G, TIME_H, TIME_I, TIME_J, TIME_K, TIME_L, TIME_M, TIME_N, TIME_O, TIME_P, TIME_Q, CPU_1, CPU_2, CPU_3, CPU_4, CPU_5, CPU_6, GPU, MEM\n")
                     
-                    # Write data rows, expanding to index 23
+                    # Write data rows, expanding to index 25
                     for row in loop_speed_data_to_save:
-                        f.write(f"{row[0]},{row[1]},{row[2]},{row[3]},{row[4]},{row[5]},{row[6]},{row[7]},{row[8]},{row[9]},{row[10]},{row[11]},{row[12]},{row[13]},{row[14]},{row[15]},{row[16]},{row[17]},{row[18]},{row[19]},{row[20]},{row[21]},{row[22]},{row[23]}\n")
+                        f.write(f"{row[0]},{row[1]},{row[2]},{row[3]},{row[4]},{row[5]},{row[6]},{row[7]},{row[8]},{row[9]},{row[10]},{row[11]},{row[12]},{row[13]},{row[14]},{row[15]},{row[16]},{row[17]},{row[18]},{row[19]},{row[20]},{row[21]},{row[22]},{row[23]},{row[24]},{row[25]}\n")
                         
                 with open(file_path_2, "w") as f:
                     # Write header row
@@ -534,8 +546,8 @@ def gui_thread():
 
     page_options = ["Telemetry", "Basic cameras", "Cameras with graph"]
     page_menu = tk.OptionMenu(nav_frame, current_page_var, *page_options, command=change_page)
-    page_menu.config(font=button_font, bg="#f39c12", fg="white", activebackground="#f39c12", activeforeground="white", relief='flat', width=22)
-    page_menu["menu"].config(font=status_font, bg="#1a1a1a", fg="white")
+    page_menu.config(font=dropdown_button_font, bg="#f39c12", fg="white", activebackground="#f39c12", activeforeground="white", relief='flat', width=22)
+    page_menu["menu"].config(font=dropdown_menu_font, bg="#1a1a1a", fg="white")
     page_menu.config(height=2)
     page_menu.pack(side='left', padx=15, expand=True)
 
@@ -896,11 +908,23 @@ def gui_thread():
     bulb_container = tk.Frame(video_with_bulb_frame, bg="#1a1a1a")
     bulb_container.pack(side='left', padx=0, pady=10)
     
-    # --- AUTO WEED BUTTON ---
-    btn_auto_weed = tk.Button(bulb_container, text="AUTO WEED: OFF", font=button_font, bg="#e74c3c", fg="white", 
+
+    # Create a sub-frame to hold Auto Weed Button and Camera Start Button horizontally
+    weed_cam_btn_frame = tk.Frame(bulb_container, bg="#1a1a1a")
+    weed_cam_btn_frame.pack(side='top', pady=(0, 10))
+
+    # Auto Weed Button
+    btn_auto_weed = tk.Button(weed_cam_btn_frame, text="AUTO WEED: OFF", font=button_font, bg="#e74c3c", fg="white", 
                                   activebackground="#e74c3c", activeforeground="white", relief='flat',
                                   command=toggle_auto_weed, height=2, width=15)
-    btn_auto_weed.pack(side='top', pady=(0, 10))
+    btn_auto_weed.pack(side='left', padx=5)
+
+    # Camera Start Button
+    btn_camera_start = tk.Button(weed_cam_btn_frame, text="CAMERA: OFF", font=button_font, bg="#e74c3c", fg="white", 
+                                  activebackground="#e74c3c", activeforeground="white", relief='flat',
+                                  command=toggle_camera_start, height=2, width=15)
+    btn_camera_start.pack(side='left', padx=5)
+    # -------------------------------------------------
 
     # Create the unique Canvas just for the Light Bulb indicator
     bulb_canvas = tk.Canvas(bulb_container, width=700, height=500, bg="#1a1a1a", highlightthickness=0)

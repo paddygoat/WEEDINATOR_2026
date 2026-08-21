@@ -10,7 +10,7 @@ start_time = time.time()  # <--- Stores the application baseline start time
 LIGHT_BULB_FLASH_DELTA_ARRAY = []  # Is this necessary?
 
 # --- Graph Tracking Metrics (Max 500 points) ---
-MAX_GRAPH_POINTS = 2000
+MAX_GRAPH_POINTS = 5000
 # These will store tuples in the format: (epoch_timestamp, time_delta)
 graph_green_filtered = deque(maxlen=MAX_GRAPH_POINTS)
 graph_yolo_filtered = deque(maxlen=MAX_GRAPH_POINTS)
@@ -102,6 +102,8 @@ loop_speed_array = deque(maxlen=MAX_GRAPH_POINTS)
 data_for_analysis = deque(maxlen=MAX_GRAPH_POINTS)
 
 ch12_data = 992 # horizontal hydraulic actuator
+
+camera_start = False
 
 
 
