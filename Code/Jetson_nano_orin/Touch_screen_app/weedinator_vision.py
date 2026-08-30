@@ -61,10 +61,20 @@ RECORD_CPU_TIME_INTERVAL = 2.0
 # frame DECIMATOR variable here
 VISION_TO_GUI_FRAME_DECIMATOR = 5
 
-expected_time_delta = 8.9 # This variable can be adjusted by both the camera detections and the encoder on the implement wheel, with appropriate weighting.
-DEBOUNCE_TIME = expected_time_delta/5
+expected_time_delta = 8.0 # This variable can be adjusted by both the camera detections and the encoder on the implement wheel, with appropriate weighting.
 
-RECORD_GRAPH_DATA = False
+path_exp_delta = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/expected_time_delta.txt"
+try:
+    if os.path.exists(path_exp_delta):
+        with open(path_exp_delta, "r") as f: expected_time_delta = float(f.read().strip())
+    print(f"Loaded persistent settings: expected_time_delta={expected_time_delta}, ...")
+except Exception as e:
+    print(f"Could not load saved expected_time_delta value (using defaults): {e}")
+
+if not (0 < expected_time_delta < 15.0):
+    expected_time_delta = 8.0
+
+DEBOUNCE_TIME = expected_time_delta/5
 
 # Disable Ultralytics logging globally
 logging.getLogger("ultralytics").setLevel(logging.ERROR)
@@ -722,13 +732,17 @@ Camera stream initialized successfully. Starting manual frame processing loop...
     current_epoch_time = 0.0
 
     # Define a strict maximum capacity so memory never bloats and GC pauses stop
-    MAX_HISTORY_POINTS = 20
+    with shared_state.data_lock:
+        MAX_HISTORY_POINTS = shared_state.MAX_GRAPH_POINTS
 
     GREEN_TIME_DELTA_ARRAY = deque(maxlen=MAX_HISTORY_POINTS)
     GREEN_TIME_DELTA_ARRAY_FILTERED = deque(maxlen=MAX_HISTORY_POINTS)
     YOLO_TIME_DELTA_ARRAY_FILTERED = deque(maxlen=MAX_HISTORY_POINTS)
     AVERAGED_TIME_DELTA_ARRAY = deque(maxlen=MAX_HISTORY_POINTS)
     LIGHT_BULB_FLASH_DELTA_ARRAY = deque(maxlen=MAX_HISTORY_POINTS)
+    GPS_SPEED_ARRAY = deque(maxlen=MAX_HISTORY_POINTS)
+    
+
     averageCalculated = False
 
     # --- Crossing Detection State Variables for YOLO ---
@@ -790,6 +804,11 @@ Camera stream initialized successfully. Starting manual frame processing loop...
     while True:
         with shared_state.data_lock:
             camera_start_state = shared_state.camera_start
+            gps_speed = shared_state.gps_speed
+            
+        # Prevent division by zero during stops
+        # safe_current_speed = max(gps_speed, 0.01)
+
         if camera_start_state == True:
             frame_count += 1
             frame_counter += 1
@@ -832,6 +851,7 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 mem_percent = float(mem_data['percent'])
                 # print("Mem %: ", mem_percent)
                 last_cpu_read_time = current_epoch_time
+                print("gps_speed = ",gps_speed)
         
             if TIME_CALCS == True:
                 TIME_B = time.time() - t_ref
@@ -1418,6 +1438,8 @@ Camera stream initialized successfully. Starting manual frame processing loop...
             # Check for Alignment and Draw Lines ---
             # Hard-cap the array to prevent exponential O(N^4) math bombs during motion blur
             centers_green = centers_green[:8]
+            # Sort Green blob centers by Y-coordinate descending (lowest points first)
+            centers_green = sorted(centers_green, key=lambda pt: pt[1], reverse=True)
             num_detections_green = len(centers_green)
 
             if num_detections_green >= 2:
@@ -1513,6 +1535,8 @@ Camera stream initialized successfully. Starting manual frame processing loop...
             # Use the yolo_centers for angle analysis
             # Hard-cap the array to prevent exponential math bombs
             centers_yolo = yolo_centers[:8] # Limit to top 12 detections maximum
+            # Sort YOLO centers by Y-coordinate descending (lowest points first)
+            centers_yolo = sorted(centers_yolo, key=lambda pt: pt[1], reverse=True)
             num_detections_yolo = len(centers_yolo)
     
             if num_detections_yolo >= 2:
@@ -1742,6 +1766,19 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                 t_ref = time.time()  # Reset reference timestamp for next section
 #################################################################################################################
 
+            GPS_SPEED_ARRAY.append((current_rel_time, gps_speed))
+            '''
+            # Calculate speed variance over the last 5 frames
+            recent_speeds = list(GPS_SPEED_ARRAY)[-5:] if len(GPS_SPEED_ARRAY) >= 5 else list(GPS_SPEED_ARRAY)
+
+            if len(recent_speeds) > 1:
+                mean_speed = sum(s[1] for s in recent_speeds) / len(recent_speeds)
+                speed_variance = sum((s[1] - mean_speed) ** 2 for s in recent_speeds) / len(recent_speeds)
+            else:
+                speed_variance = 0.0
+            '''
+#################################################################################################################
+
             # Crossing Detection and Epoch Time Output (Using System Time) for green ---
             if green_center_point is not None:
                 # Use the 'py' variable determined in the logic block above
@@ -1943,28 +1980,6 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                         PREDICTED_TIME_DELTA_ARRAY.append((timestamp, delta_time))
                     '''
 
-
-                    # Use expected_time_delta as a starting point.
-                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 1:
-                        timestamp_a, delta_time_a = LIGHT_BULB_FLASH_DELTA_ARRAY[-1]
-                    
-                    # Use different values for timestamp_a and delta_time_a after missing initial data point detected since no flash delta array value is available:
-                    if (len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 1) and (first_missing == True):
-                        timestamp_a, delta_time_a = PREDICTED_TIME_DELTA_ARRAY[-1]
-
-                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 2:
-                        timestamp_b, delta_time_b = LIGHT_BULB_FLASH_DELTA_ARRAY[-2]
-
-                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 3:
-                        timestamp_c, delta_time_c = LIGHT_BULB_FLASH_DELTA_ARRAY[-3]
-
-                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 4:
-                        timestamp_d, delta_time_d = LIGHT_BULB_FLASH_DELTA_ARRAY[-4]
-                    
-                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 5:
-                        timestamp_e, delta_time_e = LIGHT_BULB_FLASH_DELTA_ARRAY[-5]
-                    
-
                     # elif len(YOLO_TIME_DELTA_ARRAY_FILTERED) >= 4:
                         # print("No value for AVERAGED_TIME_DELTA_ARRAY[-5] !!!!")
                         # print("timestamp_d, delta_time_e: ",timestamp_d, delta_time_e)
@@ -1990,25 +2005,23 @@ Camera stream initialized successfully. Starting manual frame processing loop...
 #################################################################################################################
 
             # Weights must add up to 1.0:
-            weight_a5 = 0.3
-            weight_b5 = 0.25
-            weight_c5 = 0.20
-            weight_d5 = 0.15
-            weight_e5 = 0.1
-        
-            weight_a4 = 0.4
-            weight_b4 = 0.25
-            weight_c4 = 0.20
-            weight_d4 = 0.15
-        
-            weight_a3 = 0.6
-            weight_b3 = 0.3
-            weight_c3 = 0.1
+            # Standard baseline weights for 5 historical points
+            weight_a5, weight_b5, weight_c5, weight_d5, weight_e5 = 0.30, 0.25, 0.20, 0.15, 0.10
+            weight_a4, weight_b4, weight_c4, weight_d4  = 0.4, 0.25, 0.20, 0.15
+            weight_a3, weight_b3, weight_c3 = 0.6, 0.3, 0.1
+            weight_a2, weight_b2 = 0.7, 0.3
 
-        
-            weight_a2 = 0.7
-            weight_b2 = 0.3
-
+            '''
+            In the GUI there is a large yellow light bulb that gets flashed when the following code instigates a 'Yellow Flash'.
+            The flash indicates the position where there should be a gap between rows of seedlings in the x axis.
+            This will help notify the system to momentarily stop the implement by extending the drawbar and send the set of rotating claws
+            sideways in the y axis and then back again to the normal central position.
+            The system tries to draw grids between green blobs and YOLO detections.
+            It then creates a weighted average between 'green' and YOLO.
+            The predicted flash uses historical weighted average detections to smooth out the crop grid centres.
+            The algorithm avoids lag by predicting into the future, so the future grid centre should be more accurate for positioning than
+            the actual next yellow flash.
+            '''
 
             try:
                 if (averageCalculated == True):
@@ -2036,78 +2049,82 @@ Camera stream initialized successfully. Starting manual frame processing loop...
                     ]
                     LIGHT_BULB_FLASH_DELTA_ARRAY.clear()
                     LIGHT_BULB_FLASH_DELTA_ARRAY.extend(valid_flashes)
+                    
+                    
+                    # Use expected_time_delta as a starting point.
+                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 1:
+                        timestamp_a, delta_time_a = LIGHT_BULB_FLASH_DELTA_ARRAY[-1]
+                    
+                    # Use different values for timestamp_a and delta_time_a after missing initial data point detected since no flash delta array value is available:
+                    if (len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 1) and (first_missing == True):
+                        timestamp_a, delta_time_a = PREDICTED_TIME_DELTA_ARRAY[-1]
+
+                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 2:
+                        timestamp_b, delta_time_b = LIGHT_BULB_FLASH_DELTA_ARRAY[-2]
+
+                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 3:
+                        timestamp_c, delta_time_c = LIGHT_BULB_FLASH_DELTA_ARRAY[-3]
+
+                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 4:
+                        timestamp_d, delta_time_d = LIGHT_BULB_FLASH_DELTA_ARRAY[-4]
+                    
+                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 5:
+                        timestamp_e, delta_time_e = LIGHT_BULB_FLASH_DELTA_ARRAY[-5]
+                        
+                    # print("len(LIGHT_BULB_FLASH_DELTA_ARRAY) = ",len(LIGHT_BULB_FLASH_DELTA_ARRAY))
 
                 
                     # ADD THIS TO TRIGGER GUI:
                     with shared_state.data_lock:
                         shared_state.yellow_flash_event = True
-                    
-                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) == 2:
-                        delta_time_p = round(((delta_time_a * weight_a2) + (delta_time_b * weight_b2) ),3)
-                        expected_time_delta = delta_time_p
-                        print("expected_time_delta: ",expected_time_delta)
-                        with shared_state.data_lock:
-                            shared_state.expected_time_delta_val = expected_time_delta
-               
-                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) == 3:
-                        delta_time_p = round(((delta_time_a * weight_a3) + (delta_time_b * weight_b3) + (delta_time_c * weight_c3) ),3)
-                        expected_time_delta = delta_time_p
-                        print("expected_time_delta: ",expected_time_delta)
-                        with shared_state.data_lock:
-                            shared_state.expected_time_delta_val = expected_time_delta
-                        
-                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) == 4:
-                        delta_time_p = round(((delta_time_a * weight_a4) + (delta_time_b * weight_b4) + (delta_time_c * weight_c4) + (delta_time_d * weight_d4) ),3)
-                        expected_time_delta = delta_time_p
-                        print("expected_time_delta: ",expected_time_delta)
-                        with shared_state.data_lock:
-                            shared_state.expected_time_delta_val = expected_time_delta
 
-                    if len(LIGHT_BULB_FLASH_DELTA_ARRAY) >= 5:
-                        delta_time_p = round(((delta_time_a * weight_a5) + (delta_time_b * weight_b5) + (delta_time_c * weight_c5) + (delta_time_d * weight_d5)  + (delta_time_e * weight_e5)),3)
-                        expected_time_delta = delta_time_p
-                        print("expected_time_delta: ",expected_time_delta)
-                        with shared_state.data_lock:
-                            shared_state.expected_time_delta_val = expected_time_delta
+                    # Find how many shared history entries are available in both arrays, capped at 5
+                    available_history = min(len(LIGHT_BULB_FLASH_DELTA_ARRAY), 5)
 
-                        # delta_time_e = delta_time_a
+                    if available_history >= 5:
+                        expected_time_delta = (delta_time_a * weight_a5) + \
+                                              (delta_time_b * weight_b5) + \
+                                              (delta_time_c * weight_c5) + \
+                                              (delta_time_d * weight_d5) + \
+                                              (delta_time_e * weight_e5)
+                    elif available_history == 4:
+                        expected_time_delta = (delta_time_a * weight_a4) + \
+                                              (delta_time_b * weight_b4) + \
+                                              (delta_time_c * weight_c4) + \
+                                              (delta_time_d * weight_d4)
+                    elif available_history == 3:
+                        expected_time_delta = (delta_time_a * weight_a3) + \
+                                              (delta_time_b * weight_b3) + \
+                                              (delta_time_c * weight_c3)
+                    elif available_history == 2:
+                        expected_time_delta = (delta_time_a * weight_a2) + \
+                                              (delta_time_b * weight_b2)
+                    else:
+                        # Fallback when building up history (fewer than 2 entries)
+                        expected_time_delta = actual_flash_delta
+
+                    # print("expected_distance: ", expected_distance)
+                    # print("safe_current_speed: ", safe_current_speed)
+                    # print("expected_time_delta: ", expected_time_delta)
+                    with shared_state.data_lock:
+                        shared_state.expected_time_delta_val = expected_time_delta
+
                 
                     # --- UPDATED PREDICTION STEP ---
                     # Predict the exact coordinate for the next light bulb flash on the graph.
-                    # X-axis: Current system time of this flash + the expected wait time until the next one.
-                    # Y-axis: The expected time delta itself.
                     next_flash_timestamp = current_rel_time + expected_time_delta
                     PREDICTED_TIME_DELTA_ARRAY.append((next_flash_timestamp, expected_time_delta))
                 
                     last_prediction_time = time.time()
-                    # print("PREDICTED_TIME_DELTA_ARRAY: ",PREDICTED_TIME_DELTA_ARRAY)
-
-                    # Put this block where the YELLOW_FLASH condition is set and PREDICTED_TIME_DELTA_ARRAY is set.
-                    if RECORD_GRAPH_DATA:
-                        graph_file_path = '/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/graph_data.txt'
-    
-                        data_to_record = {
-                            "GREEN_TIME_DELTA_ARRAY_FILTERED": list(GREEN_TIME_DELTA_ARRAY_FILTERED),
-                            "YOLO_TIME_DELTA_ARRAY_FILTERED": list(YOLO_TIME_DELTA_ARRAY_FILTERED),
-                            "AVERAGED_TIME_DELTA_ARRAY": list(AVERAGED_TIME_DELTA_ARRAY),
-                            "PREDICTED_TIME_DELTA_ARRAY": list(PREDICTED_TIME_DELTA_ARRAY),
-                            "LIGHT_BULB_FLASH_DELTA_ARRAY": list(LIGHT_BULB_FLASH_DELTA_ARRAY)
-                        }
-    
-                        try:
-                            os.makedirs(os.path.dirname(graph_file_path), exist_ok=True)
-                            with open(graph_file_path, 'w') as f:
-                                json.dump(data_to_record, f) # Fast single-line write without indent
-                        except Exception as e:
-                            print(f"[Vision Error] Failed to record graph data: {e}")
 
                     first_missing = False
                     second_missing = False
                     third_missing = False
                     fourth_missing = False
-                    fith_missing = False
-            except:
-                pass
+                    fifth_missing = False
+
+            except Exception as e:
+                print(f"An error occurred during yellow flash execution: {e}")
         
             '''
             try:
@@ -2228,6 +2245,11 @@ Camera stream initialized successfully. Starting manual frame processing loop...
             
                 shared_state.graph_light_bulb_flash.clear()
                 shared_state.graph_light_bulb_flash.extend(list(LIGHT_BULB_FLASH_DELTA_ARRAY)[-shared_state.MAX_GRAPH_POINTS:])
+                
+                shared_state.graph_gps_speed.clear()
+                shared_state.graph_gps_speed.extend(list(GPS_SPEED_ARRAY)[-shared_state.MAX_GRAPH_POINTS:])
+                
+                
             time.sleep(1/CAMERA_FRAME_RATE)
         
 

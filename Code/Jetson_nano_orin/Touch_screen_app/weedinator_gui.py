@@ -15,7 +15,157 @@ import numpy as np
 
 # send_data_state = False
 
-RECORD_GRAPH_DATA = False # Set to False to suppress graph and use yellow placeholder
+RECORD_GRAPH_DATA = False # Matplotlib graph. Set to False to suppress graph and use yellow placeholder
+
+# Toggle for the lightweight OpenCV graphing engine:
+DISPLAY_CV2_GRAPH = True
+
+import cv2
+import numpy as np
+
+def get_multi_graph_image(datasets, width, height):
+    """Generates a graph with continuous epoch_time mapping, dynamic Y scaling, and bottom timestamp labels."""
+    frame = np.full((height, width, 3), (26, 26, 26), dtype=np.uint8)
+    
+    # Define readable color constants (OpenCV uses BGR format)
+    GREEN = (0, 200, 0)
+    RED = (0, 0, 255)        
+    BLUE = (255, 0, 0)       
+    MAGENTA = (255, 0, 255)
+    ORANGE = (0, 140, 255)
+    YELLOW = (0, 255, 255)
+
+    colors = {
+        'data_green': GREEN,
+        'data_yolo': BLUE,
+        'data_avg': MAGENTA,
+        'data_pred': RED,
+        'data_flash': YELLOW,
+        'data_GPS_speed' : ORANGE
+    }
+
+    # 1. Collect all X (epoch_time) and Y (delta) values to determine global bounds
+    all_x = []
+    all_y = []
+    for name, data_deque in datasets.items():
+        for item in data_deque:
+            if isinstance(item, (tuple, list)) and len(item) >= 2:
+                all_x.append(item[0])
+                # Scale GPS speed by 10 for bounds calculation
+                val = item[1] * 10 if name == 'data_GPS_speed' else item[1]
+                all_y.append(val)
+            else:
+                all_y.append(item)
+            
+    if not all_y or not all_x:
+        return frame
+
+    # 2. Calculate dynamic bounds for both axes
+    x_min, x_max = min(all_x), max(all_x)
+    x_range = max(0.001, x_max - x_min)
+
+    y_min, y_max = min(all_y), max(all_y)
+    buffer = (y_max - y_min) * 0.1 if y_max > y_min else 0.1
+    y_min -= buffer
+    y_max += buffer
+    y_range = max(0.001, y_max - y_min)
+
+    # 3. Define layout padding and dimensions (reserving space at the bottom)
+    x_padding = 110  
+    right_margin = 20
+    bottom_margin = 35
+    drawable_width = width - x_padding - right_margin
+    drawable_height = height - bottom_margin
+
+    # 4. Draw Faint Grid Lines
+    grid_color = (65, 65, 65)  
+    
+    # Horizontal grid lines across the active graph area
+    y_lines = 5
+    for i in range(y_lines):
+        y = int(i * (drawable_height - 1) / (y_lines - 1))
+        cv2.line(frame, (x_padding, y), (width - right_margin, y), grid_color, thickness=1, lineType=cv2.LINE_AA)
+        
+    # Vertical grid lines aligned to 6 tick marks
+    num_ticks = 6
+    for j in range(num_ticks):
+        x = int(x_padding + j * drawable_width / (num_ticks - 1))
+        cv2.line(frame, (x, 0), (x, drawable_height - 1), grid_color, thickness=1, lineType=cv2.LINE_AA)
+
+    # 5. Plot the data lines and markers using continuous epoch mapping
+    for name, data_deque in datasets.items():
+        if not data_deque:
+            continue
+            
+        points = []
+        for item in data_deque:
+            if isinstance(item, (tuple, list)) and len(item) >= 2:
+                item_x, val = item[0], item[1]
+                # Scale GPS speed by 10 for plotting
+                if name == 'data_GPS_speed':
+                    val *= 10
+            else:
+                continue
+                
+            # Proportional mapping along the global epoch_time timeline
+            x = int(x_padding + ((item_x - x_min) / x_range) * drawable_width)
+            y = int(drawable_height - ((val - y_min) / y_range) * drawable_height)
+            points.append((x, y))
+            
+        color = colors.get(name, (255, 255, 255))
+        
+        if len(points) >= 2:
+            pts_array = np.array(points, np.int32).reshape((-1, 1, 2))
+            cv2.polylines(frame, [pts_array], isClosed=False, color=color, thickness=2)
+        
+        # Set radius to 1 for data_GPS_speed, default to 6 for all others
+        marker_radius = 1 if name == 'data_GPS_speed' else 6
+        
+        for pt in points:
+            cv2.circle(frame, pt, radius=marker_radius, color=color, thickness=-1)
+
+    # 6. Draw X-Axis Baseline, Ticks, and Timestamp Labels
+    axis_y = drawable_height - 1
+    cv2.line(frame, (x_padding, axis_y), (width - right_margin, axis_y), (180, 180, 180), thickness=1, lineType=cv2.LINE_AA)
+
+    for j in range(num_ticks):
+        tick_x_val = x_min + (j / (num_ticks - 1)) * x_range
+        tick_pixel_x = int(x_padding + j * drawable_width / (num_ticks - 1))
+        
+        # Draw small tick tickmark pointing downwards
+        cv2.line(frame, (tick_pixel_x, axis_y), (tick_pixel_x, axis_y + 5), (180, 180, 180), thickness=1)
+        
+        # Format epoch time string (showing 1 decimal place)
+        time_str = f"{tick_x_val:.1f}"
+        
+        # Adjust text horizontal position to prevent cutting off at the edges
+        text_x = tick_pixel_x - 18
+        if j == 0:
+            text_x = tick_pixel_x  # Align the first label cleanly on the left padding boundary
+        elif j == num_ticks - 1:
+            text_x = tick_pixel_x - 35  # Pull the final label slightly left to stay inside the window boundary
+
+        cv2.putText(
+            frame, text=time_str, org=(text_x, height - 10), 
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.4, 
+            color=(200, 200, 200), thickness=1, lineType=cv2.LINE_AA
+        )
+
+    # 7. Draw the LHS Text Legend
+    legend_x = 15
+    legend_y_start = 30
+    line_spacing = 25
+
+    for index, (name, color) in enumerate(colors.items()):
+        if name in datasets:
+            current_y = legend_y_start + (index * line_spacing)
+            cv2.putText(
+                frame, text=name, org=(legend_x, current_y), 
+                fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, 
+                color=color, thickness=1, lineType=cv2.LINE_AA
+            )
+
+    return frame
 
 def gui_thread():
 
@@ -57,6 +207,7 @@ def gui_thread():
         path_flick = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/camera_flick_mode.txt"
         path_simulate = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/simulate_status.txt"
         path_x_adjust = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/x_axis_adjust.txt"
+        path_exp_delta = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/expected_time_delta.txt"
         
         # Set defaults in case files don't exist yet
         val1, val2 = 0, 0 
@@ -78,6 +229,7 @@ def gui_thread():
         val_flick = 0
         val_simulate = True
         val_x_adjust = 0
+        val_exp_delta = 8.0
         
         try:
             if os.path.exists(path1):
@@ -137,6 +289,8 @@ def gui_thread():
                 with open(path_simulate, "r") as f: val_simulate = (f.read().strip() == "True")
             if os.path.exists(path_x_adjust):
                 with open(path_x_adjust, "r") as f: val_x_adjust = int(f.read().strip())
+            if os.path.exists(path_exp_delta):
+                with open(path_exp_delta, "r") as f: val_exp_delta = float(f.read().strip())
                 
 
             print(f"Loaded persistent settings: Slider1={val1}, Slider2={val2}, Saturation={val_sat}, Gain={val_gain}, Confidence={val_conf}, Coalesce={val_coalesce}")
@@ -166,6 +320,7 @@ def gui_thread():
             shared_state.camera_flick_mode = val_flick
             shared_state.USE_CAMERA = val_simulate
             shared_state.X_AXIS_ADJUST = val_x_adjust
+            shared_state.expected_time_delta_val = val_exp_delta
 
     # Execute the load immediately
     load_slider_values()
@@ -211,6 +366,7 @@ def gui_thread():
             val_flick = str(shared_state.camera_flick_mode)
             val_simulate = str(shared_state.USE_CAMERA)
             val_x_adjust = str(shared_state.X_AXIS_ADJUST)
+            val_exp_delta = str(shared_state.expected_time_delta_val)
             
         paths = {
             "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/slider_1_val.txt": val1,
@@ -233,7 +389,8 @@ def gui_thread():
             "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/camera_backlight_comp.txt": val_backlight,
             "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/camera_flick_mode.txt": val_flick,
             "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/simulate_status.txt": val_simulate,
-            "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/x_axis_adjust.txt": val_x_adjust
+            "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/x_axis_adjust.txt": val_x_adjust,
+            "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/expected_time_delta.txt": val_exp_delta
         }
         
         try:
@@ -295,12 +452,20 @@ def gui_thread():
             try:
                 file_path = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/loop_speed_data.txt"
                 file_path_2 = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/data_for_analysis.txt"
+                file_path_3 = "/home/nano/Documents/WEEDINATOR/Code/Jetson_nano/prediction_data.txt"
                 
                 # Safely copy the data out of the shared state
                 with shared_state.data_lock:
                     loop_speed_data_to_save = list(shared_state.loop_speed_array)
-                    # print("loop_speed_data_to_save: ",loop_speed_data_to_save)
                     analysis_data_copy = list(shared_state.data_for_analysis)
+                    
+                    # Extract prediction graph data:
+                    data_green = list(shared_state.graph_green_filtered)
+                    data_yolo = list(shared_state.graph_yolo_filtered)
+                    data_avg = list(shared_state.graph_averaged)
+                    data_pred = list(shared_state.graph_predicted)
+                    data_flash = list(shared_state.graph_light_bulb_flash)
+                    data_GPS_speed = list(shared_state.graph_gps_speed)
                     
                 # Write to text file (CSV format: elapsed_time_sec, loop_duration_sec)
                 with open(file_path, "w") as f:
@@ -319,8 +484,27 @@ def gui_thread():
                     for row in analysis_data_copy:
                         f.write(f"{row[0]},{row[1]},{row[2]},{row[3]},{row[4]},{row[5]},{row[6]},{row[7]},{row[8]},{row[9]}\n")
 
+                # Write prediction graph data
+                with open(file_path_3, "w") as f:
+                    f.write("data_type,epoch_time,delta\n")
+                        
+                    for row in data_green:
+                        f.write(f"green,{row[0]},{row[1]}\n")
+                    for row in data_yolo:
+                        f.write(f"yolo,{row[0]},{row[1]}\n")
+                    for row in data_avg:
+                        f.write(f"avg,{row[0]},{row[1]}\n")
+                    for row in data_pred:
+                        f.write(f"pred,{row[0]},{row[1]}\n")
+                    for row in data_flash:
+                        f.write(f"flash,{row[0]},{row[1]}\n")
+                    for row in data_GPS_speed:
+                        f.write(f"gps_speed,{row[0]},{row[1]}\n")
+
                 print(f"Successfully saved {len(loop_speed_data_to_save)} loop speed records to {file_path}")
                 print(f"[GUI] Successfully saved {len(analysis_data_copy)} records to {file_path_2}")
+                print(f"[GUI] Successfully saved prediction graph data to {file_path_3}")
+                    
             except Exception as e:
                 print(f"Error saving loop speed data: {e}")
             # ----------------------------------------------------
@@ -842,10 +1026,20 @@ def gui_thread():
                                    highlightcolor="white",
                                    highlightthickness=1)
     graph_content_frame.pack(expand=True, fill='both', pady=10, padx=10)
+    
+    # Set graph_content_frame as the parent container
+    cv2_graph_label = tk.Label(
+        graph_content_frame, 
+        bg="#1a1a1a", 
+        bd=0, 
+        highlightthickness=0
+    )
+    cv2_graph_label.pack(expand=True, fill='both')
 
     # Create a pure object-oriented Figure (safe for threads)
     # print("Attempting to produce figure:")
-    
+
+    # TODO: Delete this matplotlib section:
     if RECORD_GRAPH_DATA:
         fig = Figure(figsize=(6.0, 1.4), dpi=100, facecolor="#1a1a1a")
         fig.set_tight_layout(True) # Force the internal plot to fill all edge-to-edge space
@@ -878,14 +1072,15 @@ def gui_thread():
         canvas_widget = canvas.get_tk_widget()
         canvas_widget.pack(side='top', expand=True, fill='both', pady=(0, 10))
     else:
-            # Placeholder: Solid yellow square frame
-            yellow_placeholder = tk.Frame(
-                graph_content_frame, 
-                bg="grey", 
-                width=200, 
-                height=200
-            )
-            yellow_placeholder.pack(fill=tk.BOTH, expand=True)
+        # Placeholder: Solid yellow square frame
+        # yellow_placeholder = tk.Frame(
+            # graph_content_frame, 
+            # bg="grey", 
+            # width=200, 
+            # height=200
+        # )
+        # yellow_placeholder.pack(fill=tk.BOTH, expand=True)
+        pass
 
     # Create a container frame to hold both the lightbulb and the video feed side-by-side
     # Added highlight attributes to create a clean, thin white border
@@ -937,6 +1132,10 @@ def gui_thread():
     # Create the Label to display the Vision Loop Time
     lbl_loop_time = tk.Label(bulb_container, text="Time since last loop = 0.0000 seconds", font=status_font, fg="white", bg="#1a1a1a")
     lbl_loop_time.pack(side='top', pady=(5, 0))
+    
+    # Create the Label to display the GPS speed on the graph page
+    lbl_gps_speed_graph = tk.Label(bulb_container, text="GPS speed = 0.00000", font=status_font, fg="white", bg="#1a1a1a")
+    lbl_gps_speed_graph.pack(side='top', pady=(5, 0))
     
     # --- X AXIS ADJUSTMENT SLIDER ---
     x_axis_slider = tk.Scale(bulb_container, from_=-300, to=300, orient='horizontal', 
@@ -1194,6 +1393,7 @@ def gui_thread():
             # --- UPDATE THE TEXT DYNAMICALLY ---
             lbl_expected_delta.config(text=f"Expected Time Delta = {shared_state.expected_time_delta_val:.3f} seconds")
             lbl_loop_time.config(text=f"Camera loop speed = {shared_state.vision_loop_time:.4f} seconds")
+            lbl_gps_speed_graph.config(text=f"GPS speed = {shared_state.gps_speed:.5f} m/second")
             # Check if the vision thread triggered a yellow flash
             if getattr(shared_state, 'yellow_flash_event', False):
                 # Illuminate the bulb yellow
@@ -1215,7 +1415,39 @@ def gui_thread():
             data_avg = list(shared_state.graph_averaged)
             data_pred = list(shared_state.graph_predicted)
             data_flash = list(shared_state.graph_light_bulb_flash)
+            data_GPS_speed = list(shared_state.graph_gps_speed)
 
+        if DISPLAY_CV2_GRAPH:
+            with shared_state.data_lock:
+                datasets = {
+                    'data_green': shared_state.graph_green_filtered,
+                    'data_yolo': shared_state.graph_yolo_filtered,
+                    'data_avg': shared_state.graph_averaged,
+                    'data_pred': shared_state.graph_predicted,
+                    'data_flash': shared_state.graph_light_bulb_flash,
+                    'data_GPS_speed': shared_state.graph_gps_speed
+                }
+            
+            # Generate the image (adjust width and height to match your layout)
+            cv_img = get_multi_graph_image(datasets, width=1800, height=200)
+            
+            # Convert OpenCV BGR to RGB, then to Tkinter PhotoImage
+            rgb_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+            pil_img = Image.fromarray(rgb_img)
+            tk_img = ImageTk.PhotoImage(image=pil_img)
+            
+            # Update the label and keep a reference to prevent garbage collection
+            cv2_graph_label.config(image=tk_img)
+            cv2_graph_label.image = tk_img
+            
+        # Inside your update loop, fetch current frame dimensions
+        # width = max(graph_content_frame.winfo_width(), 100)
+        # height = max(graph_content_frame.winfo_height(), 100)
+
+        # Pass the dynamic width and height to your generator
+        # cv_img = get_multi_graph_image(datasets, width=width, height=height)
+
+        # TODO: Delete this matplotlib section:
         if RECORD_GRAPH_DATA:
             # Unpack tuples into separate X (epoch time) and Y (delta) arrays
             x_green, y_green = zip(*data_green) if data_green else ([], [])

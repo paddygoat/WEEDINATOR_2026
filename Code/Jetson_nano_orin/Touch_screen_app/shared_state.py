@@ -9,7 +9,7 @@ start_time = time.time()  # <--- Stores the application baseline start time
 
 LIGHT_BULB_FLASH_DELTA_ARRAY = []  # Is this necessary?
 
-# --- Graph Tracking Metrics (Max 500 points) ---
+# --- Graph Tracking Metrics (Max 5000 points) ---
 MAX_GRAPH_POINTS = 5000
 # These will store tuples in the format: (epoch_timestamp, time_delta)
 graph_green_filtered = deque(maxlen=MAX_GRAPH_POINTS)
@@ -17,6 +17,7 @@ graph_yolo_filtered = deque(maxlen=MAX_GRAPH_POINTS)
 graph_averaged = deque(maxlen=MAX_GRAPH_POINTS)
 graph_predicted = deque(maxlen=MAX_GRAPH_POINTS)
 graph_light_bulb_flash = deque(maxlen=MAX_GRAPH_POINTS)
+graph_gps_speed = deque(maxlen=MAX_GRAPH_POINTS)
 
 # GREEN_TIME_DELTA_ARRAY, GREEN_TIME_DELTA_ARRAY_FILTERED, YOLO_TIME_DELTA_ARRAY, YOLO_TIME_DELTA_ARRAY_FILTERED, AVERAGED_TIME_DELTA_ARRAY, PREDICTED_TIME_DELTA_ARRAY
 
@@ -92,7 +93,7 @@ send_data_state = False
 yellow_flash_event = False
 
 # ADD THIS LINE TO TRACK EXPECTED TIME DELTA:
-expected_time_delta_val = 0.0
+expected_time_delta_val = 8.0
 
 # TRACK VISION LOOP TIME:
 vision_loop_time = 0.0
