@@ -40,5 +40,3 @@ Once the expected delta is established, the script calculates the exact predicte
 $$t_{\text{nextFlash}} = t_{\text{currentRel}} + E[\Delta t]$$
 
 This final predicted timestamp ($t_{\text{nextFlash}}$) is then pushed into the `PREDICTED_TIME_DELTA_ARRAY` to drive the system's analytical graphing functions.
-
-Are you planning to test alternative weight distributions for these historical data points to handle sudden acceleration or deceleration?
