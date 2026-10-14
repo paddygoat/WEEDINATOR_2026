@@ -1,0 +1,514 @@
+"""Two RHS uprights, three crossmembers and two HGL30CA blocks and two 500 mm rails and eight front mounting lugs four lug pins, two symmetric front vertical L-angles and a 500 mm front box section; dimensions in mm.
+
+Each section retains its previous +90 degree local Z rotation.
+Move each section 40 mm outward, increasing centre spacing to 420 mm.
+Then rotate the pair +90 degrees about their shared Z axis at (0,170).
+Final centres: (210,170,365) and (-210,170,365).
+Final individual extents: X = 80, Y = 40, Z = 730.
+Crossmember: 40 x 40 x 3 x 340, along X from -170 to 170,
+centred at Y=170. Crossmember Z extents, top to bottom:
+690..730, 365..405, 55..95. Clear vertical gaps: 285 and 270.
+Re-running sets these absolute placements without accumulating transforms.
+Rear is +Y. Block mounting faces at Y=190, overall tops at Z=730.
+Blocks are simplified envelopes with nominal M8 blind mounting bores;
+block rail recesses are simplified; seals and grease fittings are omitted.
+H=42 is rail-base-to-mounting-face height; block depth is H-H1=36.
+Four diameter-9 clearance holes penetrate only each upright rear wall.
+Opposite front walls have coaxial diameter-20 tool access holes.
+M8x12 screws: 3 mm wall plus 9 mm engagement, no washers.
+Head bearing faces seat flush against the inner rear wall at Y=187;
+heads project into the hollow section. Hex sockets: 6 mm AF, 4 mm deep.
+Threads are omitted.
+Assumed corner radii: outside 6 mm, inside 3 mm (constant 3 mm wall).
+"""
+import FreeCAD as App
+import FreeCADGui as Gui
+import Part
+import math
+
+WIDTH_X = 80.0
+DEPTH_Y = 40.0
+WALL = 3.0
+HEIGHT = 730.0
+OUTSIDE_RADIUS = 6.0
+INSIDE_RADIUS = OUTSIDE_RADIUS - WALL
+Y_OFFSET = 340.0
+SPACING_INCREASE = 80.0
+PIVOT = App.Vector(0, Y_OFFSET / 2, 0)
+ASSEMBLY_ROTATION = App.Rotation(App.Vector(0, 0, 1), 90)
+LOCAL_ROTATION = App.Rotation(App.Vector(0, 0, 1), 90)
+FINAL_ROTATION = ASSEMBLY_ROTATION.multiply(LOCAL_ROTATION)
+
+
+def final_placement(y):
+    centre = App.Vector(0, y, 0)
+    position = PIVOT + ASSEMBLY_ROTATION.multVec(centre - PIVOT)
+    return App.Placement(position, FINAL_ROTATION)
+
+
+def rounded_prism(width, depth, height, radius, z=0.0):
+    box = Part.makeBox(width, depth, height,
+                       App.Vector(-width / 2, -depth / 2, z))
+    # Round only the four longitudinal edges; leave tube ends square-cut.
+    vertical_edges = []
+    for edge in box.Edges:
+        vertices = edge.Vertexes
+        if len(vertices) == 2:
+            delta = vertices[1].Point - vertices[0].Point
+            if (abs(delta.x) < 1e-7 and abs(delta.y) < 1e-7
+                    and abs(abs(delta.z) - height) < 1e-7):
+                vertical_edges.append(edge)
+    return box.makeFillet(radius, vertical_edges)
+
+
+outer = rounded_prism(WIDTH_X, DEPTH_Y, HEIGHT, OUTSIDE_RADIUS)
+# Extend the cutter beyond both ends to produce an open hollow section.
+inner = rounded_prism(WIDTH_X - 2 * WALL, DEPTH_Y - 2 * WALL,
+                      HEIGHT + 2, INSIDE_RADIUS, -1.0)
+section = outer.cut(inner).removeSplitter()
+if not section.isValid() or len(section.Solids) != 1:
+    raise RuntimeError("Could not create a valid hollow box section.")
+
+CROSS_SIZE = 40.0
+CROSS_LENGTH = 340.0
+cross_outer = rounded_prism(CROSS_SIZE, CROSS_SIZE, CROSS_LENGTH, OUTSIDE_RADIUS)
+cross_inner = rounded_prism(CROSS_SIZE - 2 * WALL, CROSS_SIZE - 2 * WALL,
+                            CROSS_LENGTH + 2, INSIDE_RADIUS, -1.0)
+cross_section = cross_outer.cut(cross_inner).removeSplitter()
+if not cross_section.isValid() or len(cross_section.Solids) != 1:
+    raise RuntimeError("Could not create a valid hollow crossmember.")
+# Clear distances between the horizontal faces of successive members.
+CLEAR_GAPS = (285.0, 270.0)
+cross_centres_z = [HEIGHT - CROSS_SIZE / 2]
+for gap in CLEAR_GAPS:
+    cross_centres_z.append(cross_centres_z[-1] - CROSS_SIZE - gap)
+
+
+def cross_placement(z):
+    # Rotate local longitudinal Z axis onto assembly X axis.
+    return App.Placement(
+        App.Vector(-CROSS_LENGTH / 2, PIVOT.y, z),
+        App.Rotation(App.Vector(0, 1, 0), 90))
+
+
+# Supplied HGL30CAZ0H dimensions, mm.
+BLOCK_WIDTH = 60.0
+BLOCK_LENGTH = 97.4
+BLOCK_DEPTH = 42.0 - 6.0
+BOLT_PITCH_X = 40.0
+BOLT_PITCH_Z = 40.0
+TAPPED_DEPTH = 10.0
+REAR_FACE_Y = PIVOT.y + DEPTH_Y / 2
+BLOCK_CENTRE_Z = HEIGHT - BLOCK_LENGTH / 2
+FRONT_FACE_Y = PIVOT.y - DEPTH_Y / 2
+ACCESS_DIAMETER = 20.0
+BOLT_ENGAGEMENT = 9.0
+BOLT_LENGTH = WALL + BOLT_ENGAGEMENT
+HEAD_DIAMETER = 13.0
+HEAD_HEIGHT = 8.0
+SOCKET_AF = 6.0
+SOCKET_DEPTH = 4.0
+
+
+def mounting_points(x):
+    return [(x + dx, BLOCK_CENTRE_Z + dz)
+            for dx in (-BOLT_PITCH_X / 2, BOLT_PITCH_X / 2)
+            for dz in (-BOLT_PITCH_Z / 2, BOLT_PITCH_Z / 2)]
+
+
+def drilled_upright(y):
+    shape = section.copy()
+    shape.Placement = final_placement(y)
+    x = shape.BoundBox.Center.x
+    for hx, hz in mounting_points(x):
+        cutter = Part.makeCylinder(4.5, WALL + 2,
+            App.Vector(hx, REAR_FACE_Y - WALL - 1, hz), App.Vector(0, 1, 0))
+        shape = shape.cut(cutter)
+        access = Part.makeCylinder(ACCESS_DIAMETER / 2, WALL + 2,
+            App.Vector(hx, FRONT_FACE_Y - 1, hz), App.Vector(0, 1, 0))
+        shape = shape.cut(access)
+    return shape.removeSplitter()
+
+
+def bearing_block(x):
+    shape = Part.makeBox(BLOCK_WIDTH, BLOCK_DEPTH, BLOCK_LENGTH,
+        App.Vector(x - BLOCK_WIDTH / 2, REAR_FACE_Y, HEIGHT - BLOCK_LENGTH))
+    for hx, hz in mounting_points(x):
+        # Nominal thread envelope, not a helical thread model.
+        cutter = Part.makeCylinder(4.0, TAPPED_DEPTH + 1,
+            App.Vector(hx, REAR_FACE_Y - 1, hz), App.Vector(0, 1, 0))
+        shape = shape.cut(cutter)
+    return shape.removeSplitter()
+
+
+def mounting_bolt(x, z):
+    # Underside of head coincides with the inner mounting wall.
+    under_head_y = REAR_FACE_Y - WALL
+    shaft = Part.makeCylinder(4.0, BOLT_LENGTH,
+        App.Vector(x, under_head_y, z), App.Vector(0, 1, 0))
+    head_front_y = under_head_y - HEAD_HEIGHT
+    head = Part.makeCylinder(HEAD_DIAMETER / 2, HEAD_HEIGHT,
+        App.Vector(x, head_front_y, z), App.Vector(0, 1, 0))
+    blank = shaft.fuse(head)
+    # A regular hexagon's circumradius is AF / sqrt(3).
+    radius = SOCKET_AF / math.sqrt(3.0)
+    points = [App.Vector(x + radius * math.cos(i * math.pi / 3),
+                         head_front_y - 1,
+                         z + radius * math.sin(i * math.pi / 3))
+              for i in range(6)]
+    points.append(points[0])
+    socket = Part.Face(Part.makePolygon(points)).extrude(
+        App.Vector(0, SOCKET_DEPTH + 1, 0))
+    return blank.cut(socket).removeSplitter()
+
+
+# Rail envelope and holes follow rail_dimensions_01.txt.
+# Raceway outline is traced from the supplied schematic, NOT a certified
+# manufacturer profile: groove radii and detailed coordinates were not given.
+RAIL_WIDTH = 28.0
+RAIL_HEIGHT = 26.0
+RAIL_LENGTH = 500.0
+RAIL_PITCH = 80.0
+RAIL_HOLE_COUNT = 7
+RAIL_END_OFFSET = (RAIL_LENGTH - (RAIL_HOLE_COUNT - 1) * RAIL_PITCH) / 2
+RAIL_BOTTOM_Z = BLOCK_CENTRE_Z - RAIL_LENGTH / 2
+RAIL_BASE_Y = REAR_FACE_Y + 42.0
+# Source-image coordinates for right half of symmetric profile.
+# Pixel x=182 is centre, x=277 is outside, y=220 is base, y=73 top.
+# Arc entries are (midpoint, endpoint); line entries are endpoint only.
+PROFILE_RIGHT = [
+    ("line", (267,220)),
+    ("line", (277,211)),
+    ("line", (277,178)),
+    ("arc", (275,170), (270,165)),
+    ("line", (258,153)),
+    ("arc", (254,148), (253,143)),
+    ("line", (253,136)),
+    ("arc", (255,129), (260,124)),
+    ("arc", (264,115), (272,111)),
+    ("arc", (275,110), (277,107)),
+    ("line", (277,90)),
+    ("arc", (275,87), (272,86)),
+    ("arc", (266,82), (263,73)),
+    ("line", (182,73)),
+]
+
+
+def rail_profile(x, z, clearance=False):
+    def point(pixel):
+        px, py = pixel
+        u = (px - 182.0) * RAIL_WIDTH / 190.0
+        h = (220.0 - py) * RAIL_HEIGHT / 147.0
+        if clearance:
+            # Small nominal running clearance for illustrative block recess.
+            u *= 1.015
+            h = 13.0 + (h - 13.0) * 1.015
+        return App.Vector(x + u, RAIL_BASE_Y - h, z)
+    segments = []
+    start = (182,220)
+    for entry in PROFILE_RIGHT:
+        end = entry[-1]
+        segments.append((entry[0], start, entry[1] if entry[0]=="arc" else None, end))
+        start = end
+    # Reverse and mirror to close the left half.
+    def mirror(p):
+        return (364-p[0], p[1]) if p is not None else None
+    complete = segments + [(kind, mirror(end), mirror(mid), mirror(start))
+                           for kind,start,mid,end in reversed(segments)]
+    edges=[]
+    for kind,start,mid,end in complete:
+        if kind=="arc":
+            edges.append(Part.Arc(point(start),point(mid),point(end)).toShape())
+        else:
+            edges.append(Part.makeLine(point(start),point(end)))
+    face = Part.Face(Part.Wire(edges))
+    # Constrain traced arcs to the dimensioned width and height envelope.
+    scale = 1.015 if clearance else 1.0
+    envelope = Part.makePlane(RAIL_WIDTH * scale, RAIL_HEIGHT * scale,
+        App.Vector(x - RAIL_WIDTH * scale / 2,
+                   RAIL_BASE_Y - 13 - RAIL_HEIGHT * scale / 2, z))
+    return face.common(envelope).removeSplitter()
+
+
+def guide_rail(x):
+    shape = rail_profile(x, RAIL_BOTTOM_Z).extrude(App.Vector(0,0,RAIL_LENGTH))
+    top_y = RAIL_BASE_Y - RAIL_HEIGHT
+    for i in range(RAIL_HOLE_COUNT):
+        z = RAIL_BOTTOM_Z + RAIL_END_OFFSET + i * RAIL_PITCH
+        through = Part.makeCylinder(4.5, RAIL_HEIGHT + 2,
+            App.Vector(x, top_y - 1, z), App.Vector(0,1,0))
+        counterbore = Part.makeCylinder(7.0, 13.0,
+            App.Vector(x, top_y - 1, z), App.Vector(0,1,0))
+        shape = shape.cut(through).cut(counterbore)
+    return shape.removeSplitter()
+
+
+# Preserve the supplied block envelope and mounting holes, then add a
+# longitudinal clearance recess for the rail. Bearing internals remain omitted.
+bearing_block_without_recess = bearing_block
+
+
+def bearing_block(x):
+    shape = bearing_block_without_recess(x)
+    relief = rail_profile(x, HEIGHT - BLOCK_LENGTH - 1, clearance=True).extrude(
+        App.Vector(0,0,BLOCK_LENGTH + 2))
+    nominal = rail_profile(x, HEIGHT - BLOCK_LENGTH - 1).extrude(
+        App.Vector(0,0,BLOCK_LENGTH + 2))
+    return shape.cut(relief).cut(nominal).removeSplitter()
+
+
+# Two 50x50x12 lugs per upright, projecting toward front (-Y).
+# Outside X faces align with the two edges of the upright's 80 mm face.
+# Tops: Z=555; bottoms: Z=505; holes run along X at Y=125, Z=530.
+LUG_PROJECTION = 50.0
+LUG_HEIGHT = 50.0
+LUG_THICKNESS = 12.0
+LUG_HOLE_DIAMETER = 16.0
+LUG_TOP_OFFSET = 175.0
+LUG_END_RADIUS = 20.0
+LUG_TOP_Z = HEIGHT - LUG_TOP_OFFSET
+
+
+def mounting_lug(x, side):
+    left_x = (x - WIDTH_X / 2 if side < 0
+              else x + WIDTH_X / 2 - LUG_THICKNESS)
+    front_y = FRONT_FACE_Y - LUG_PROJECTION
+    bottom_z = LUG_TOP_Z - LUG_HEIGHT
+    plate = Part.makeBox(LUG_THICKNESS, LUG_PROJECTION, LUG_HEIGHT,
+        App.Vector(left_x, front_y, bottom_z))
+    # Round both corners of the free end in the YZ plate outline.
+    # Fillet the two X-directed edges at the forward-most face only.
+    free_edges = []
+    for edge in plate.Edges:
+        if len(edge.Vertexes) != 2:
+            continue
+        a, b = (v.Point for v in edge.Vertexes)
+        if (abs(a.y - front_y) < 1e-7 and abs(b.y - front_y) < 1e-7
+                and abs(a.z - b.z) < 1e-7
+                and abs(abs(a.x - b.x) - LUG_THICKNESS) < 1e-7):
+            free_edges.append(edge)
+    if len(free_edges) != 2:
+        raise RuntimeError("Could not identify the two lug free-end corners.")
+    plate = plate.makeFillet(LUG_END_RADIUS, free_edges)
+    bore = Part.makeCylinder(LUG_HOLE_DIAMETER / 2, LUG_THICKNESS + 2,
+        App.Vector(left_x - 1, front_y + LUG_PROJECTION / 2,
+                   bottom_z + LUG_HEIGHT / 2), App.Vector(1,0,0))
+    return plate.cut(bore).removeSplitter()
+
+
+# Lower lugs: same lateral alignment as upper pairs, bottoms at Z=0.
+# Extend 70 mm from front face Y=150 to free end Y=80.
+# Hole centres Y=105, Z=25; axes along X.
+LOWER_LUG_PROJECTION = 70.0
+LOWER_LUG_HEIGHT = 50.0
+LOWER_LUG_THICKNESS = 12.0
+LOWER_LUG_HOLE_DIAMETER = 25.0
+LOWER_LUG_HOLE_FROM_END = 25.0
+LOWER_LUG_RADIUS = 20.0
+
+
+def lower_mounting_lug(x, side):
+    left_x = (x - WIDTH_X / 2 if side < 0
+              else x + WIDTH_X / 2 - LOWER_LUG_THICKNESS)
+    free_y = FRONT_FACE_Y - LOWER_LUG_PROJECTION
+    plate = Part.makeBox(LOWER_LUG_THICKNESS, LOWER_LUG_PROJECTION,
+                        LOWER_LUG_HEIGHT, App.Vector(left_x, free_y, 0))
+    edges = []
+    for edge in plate.Edges:
+        if len(edge.Vertexes) != 2:
+            continue
+        a, b = (v.Point for v in edge.Vertexes)
+        if (abs(a.y - free_y) < 1e-7 and abs(b.y - free_y) < 1e-7
+                and abs(a.z - b.z) < 1e-7
+                and abs(abs(a.x - b.x) - LOWER_LUG_THICKNESS) < 1e-7):
+            edges.append(edge)
+    if len(edges) != 2:
+        raise RuntimeError("Could not identify lower lug free-end corners.")
+    plate = plate.makeFillet(LOWER_LUG_RADIUS, edges)
+    bore = Part.makeCylinder(LOWER_LUG_HOLE_DIAMETER / 2,
+        LOWER_LUG_THICKNESS + 2,
+        App.Vector(left_x - 1, free_y + LOWER_LUG_HOLE_FROM_END,
+                   LOWER_LUG_HEIGHT / 2), App.Vector(1,0,0))
+    return plate.cut(bore).removeSplitter()
+
+
+# Vertical equal angle L50x50x3, 350 mm long with R3 internal root.
+# Its rear face is against the -Y faces of crossmembers 02 and 03 (Y=150).
+# The section envelope is centred at X=+25: X=0..50, Y=100..150.
+# The second leg is on the -X edge and points forward (-Y).
+# Z=55..405 spans the outside heights of the two crossmembers.
+ANGLE_LEG = 50.0
+ANGLE_WALL = 3.0
+ANGLE_HEIGHT = 350.0
+ANGLE_ROOT_RADIUS = 3.0
+ANGLE_CENTRE_X = 25.0
+ANGLE_BOTTOM_Z = cross_centres_z[2] - CROSS_SIZE / 2
+
+
+def vertical_angle():
+    xmin = ANGLE_CENTRE_X - ANGLE_LEG / 2
+    rear_y = PIVOT.y - CROSS_SIZE / 2
+    front_y = rear_y - ANGLE_LEG
+    inner_x = xmin + ANGLE_WALL
+    inner_y = rear_y - ANGLE_WALL
+    r = ANGLE_ROOT_RADIUS
+    z = ANGLE_BOTTOM_Z
+    def p(x, y):
+        return App.Vector(x, y, z)
+    a = p(xmin, front_y)
+    b = p(inner_x, front_y)
+    c = p(inner_x, inner_y - r)
+    d = p(inner_x + r, inner_y)
+    mid = p(inner_x + r - r / math.sqrt(2),
+            inner_y - r + r / math.sqrt(2))
+    e = p(xmin + ANGLE_LEG, inner_y)
+    f = p(xmin + ANGLE_LEG, rear_y)
+    g = p(xmin, rear_y)
+    edges = [Part.makeLine(a,b), Part.makeLine(b,c),
+             Part.Arc(c,mid,d).toShape(), Part.makeLine(d,e),
+             Part.makeLine(e,f), Part.makeLine(f,g), Part.makeLine(g,a)]
+    return Part.Face(Part.Wire(edges)).extrude(App.Vector(0,0,ANGLE_HEIGHT))
+
+
+# Front vertical SHS: centred in X and between crossmembers 02 and 03.
+# Rear face Y=150, front face Y=100; Z=-20..480.
+# The angle nests alongside the right face of this section.
+FRONT_BOX_SIZE = 50.0
+FRONT_BOX_HEIGHT = 500.0
+FRONT_BOX_WALL = 3.0
+FRONT_BOX_OUTER_RADIUS = 6.0
+FRONT_BOX_INNER_RADIUS = 3.0
+FRONT_BOX_CENTRE_Z = (cross_centres_z[1] + cross_centres_z[2]) / 2
+
+
+def front_vertical_box():
+    outer = rounded_prism(FRONT_BOX_SIZE, FRONT_BOX_SIZE,
+                          FRONT_BOX_HEIGHT, FRONT_BOX_OUTER_RADIUS)
+    inner = rounded_prism(FRONT_BOX_SIZE - 2 * FRONT_BOX_WALL,
+                          FRONT_BOX_SIZE - 2 * FRONT_BOX_WALL,
+                          FRONT_BOX_HEIGHT + 2, FRONT_BOX_INNER_RADIUS, -1)
+    shape = outer.cut(inner).removeSplitter()
+    shape.translate(App.Vector(0, PIVOT.y - CROSS_SIZE / 2 - FRONT_BOX_SIZE / 2,
+                               FRONT_BOX_CENTRE_Z - FRONT_BOX_HEIGHT / 2))
+    return shape
+
+
+# Rotate the angle 180 degrees from revision 012 and nest beside the box.
+# Its outside vertical leg face X=25 touches the box right face X=25.
+# The other leg extends rightward; rear face Y=150 meets crossmembers.
+# Envelope: X=25..75, Y=100..150, Z=55..405.
+vertical_angle_original = vertical_angle
+
+
+def vertical_angle():
+    shape = vertical_angle_original()
+    shape.translate(App.Vector(25,0,0))
+    return shape
+
+
+def mirrored_vertical_angle():
+    # Mirror across the box centre plane X=0, retaining Y and Z.
+    transform = App.Matrix()
+    transform.A11 = -1.0
+    return vertical_angle().transformGeometry(transform)
+
+
+# One nominal-diameter plain pin through each pair of lugs.
+# Lug outer faces are 80 mm apart; 20 mm overhang each end gives 120 mm.
+# No fit allowance or retention hardware is modelled.
+PIN_OVERHANG = 20.0
+PIN_LENGTH = WIDTH_X + 2 * PIN_OVERHANG
+
+
+def lug_pin(x, lower=False):
+    if lower:
+        diameter = LOWER_LUG_HOLE_DIAMETER
+        y = FRONT_FACE_Y - LOWER_LUG_PROJECTION + LOWER_LUG_HOLE_FROM_END
+        z = LOWER_LUG_HEIGHT / 2
+    else:
+        diameter = LUG_HOLE_DIAMETER
+        y = FRONT_FACE_Y - LUG_PROJECTION / 2
+        z = LUG_TOP_Z - LUG_HEIGHT / 2
+    return Part.makeCylinder(diameter / 2, PIN_LENGTH,
+        App.Vector(x - WIDTH_X / 2 - PIN_OVERHANG, y, z), App.Vector(1,0,0))
+
+
+def get_component(name):
+    # Preserve existing object references while changing displayed tree labels.
+    obj = doc.getObject(name)
+    if obj is None:
+        colour, stem = name.split("_", 1)
+        obj = doc.getObject(stem + "_" + colour + "_")
+    return obj
+
+
+def set_part(name, shape, colour):
+    if not shape.isValid() or len(shape.Solids) != 1:
+        raise RuntimeError("Invalid solid: " + name)
+    obj = get_component(name) or doc.addObject("Part::Feature", name)
+    obj.Label = name
+    # Geometry is already in assembly coordinates. Reset previous placement.
+    obj.Placement = App.Placement()
+    obj.Shape = shape
+    obj.ViewObject.ShapeColor = colour
+    obj.ViewObject.LineColor = (0.25, 0.25, 0.25)
+    obj.ViewObject.Transparency = 50
+    obj.ViewObject.DisplayMode = "Flat Lines"
+    return obj
+
+
+doc = App.ActiveDocument or App.newDocument("WEEDINATOR")
+doc.openTransaction("Create WEEDINATOR box assembly")
+try:
+    for index, y in enumerate((-SPACING_INCREASE / 2,
+                               Y_OFFSET + SPACING_INCREASE / 2), start=1):
+        name = "grey_Upright_%02d" % index
+        upright = drilled_upright(y)
+        set_part(name, upright, (0.5, 0.5, 0.5))
+        x = upright.BoundBox.Center.x
+        set_part("grey_Upright_%02d_UpperPin" % index,
+                 lug_pin(x), (0.5, 0.5, 0.5))
+        set_part("grey_Upright_%02d_LowerPin" % index,
+                 lug_pin(x, lower=True), (0.5, 0.5, 0.5))
+        for lug_index, side in enumerate((-1, 1), start=1):
+            set_part("grey_Upright_%02d_Lug_%02d" % (index, lug_index),
+                     mounting_lug(x, side), (0.5, 0.5, 0.5))
+            set_part("grey_Upright_%02d_LowerLug_%02d" % (index, lug_index),
+                     lower_mounting_lug(x, side), (0.5, 0.5, 0.5))
+        block = set_part("magenta_HGL30CAZ0H_%02d" % index,
+                         bearing_block(x), (1.0, 0.0, 1.0))
+        if "ModelNote" not in block.PropertiesList:
+            block.addProperty("App::PropertyString", "ModelNote")
+        block.ModelNote = "Simplified envelope, mounting bores and rail-clearance recess; bearing internals omitted."
+        rail = set_part("grey_HGR30_Rail_%02d" % index,
+                        guide_rail(x), (0.5, 0.5, 0.5))
+        if "ModelNote" not in rail.PropertiesList:
+            rail.addProperty("App::PropertyString", "ModelNote")
+        rail.ModelNote = "28x26x500; 7 holes at 80 pitch, 10 mm end offsets; diameter 9 through, diameter 14 x 12 counterbore. Raceway curves traced from schematic, not manufacturing certified."
+        for bolt_index, (hx, hz) in enumerate(mounting_points(x), start=1):
+            set_part("grey_Block_%02d_Bolt_%02d" % (index, bolt_index),
+                     mounting_bolt(hx, hz), (0.5, 0.5, 0.5))
+    for index, z in enumerate(cross_centres_z, start=1):
+        name = "grey_Crossmember_%02d" % index
+        obj = get_component(name) or doc.addObject("Part::Feature", name)
+        obj.Label = name
+        obj.Shape = cross_section.copy()
+        obj.Placement = cross_placement(z)
+        obj.ViewObject.ShapeColor = (0.5, 0.5, 0.5)
+        obj.ViewObject.LineColor = (0.25, 0.25, 0.25)
+        obj.ViewObject.Transparency = 50
+        obj.ViewObject.DisplayMode = "Flat Lines"
+    set_part("grey_VerticalAngle_01", vertical_angle(), (0.5, 0.5, 0.5))
+    set_part("grey_VerticalAngle_02", mirrored_vertical_angle(), (0.5, 0.5, 0.5))
+    front_box = set_part("grey_VerticalBox_01", front_vertical_box(), (0.5, 0.5, 0.5))
+    if "ModelNote" not in front_box.PropertiesList:
+        front_box.addProperty("App::PropertyString", "ModelNote")
+    front_box.ModelNote = "Centred box section with symmetric angles against left and right faces; rear flanges extend outward."
+    doc.recompute()
+    doc.commitTransaction()
+except Exception:
+    doc.abortTransaction()
+    raise
+
+Gui.activeDocument().activeView().viewAxonometric()
+Gui.activeDocument().activeView().fitAll()
