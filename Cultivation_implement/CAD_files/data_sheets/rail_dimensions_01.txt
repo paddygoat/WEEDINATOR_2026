@@ -1,0 +1,16 @@
+Dimensions
+WR 	Rail width 	28 	mm
+HR 	Rail height 	26 	mm
+D 		14 	mm
+h 		12 	mm
+d 		9 	mm
+P 	Hole pitch 	80 	mm
+Lmax 	Max. length (E1 = E2 = P/2) 	3.920 	mm
+Lmin 	Min. length 	98 	mm
+E1/2 min 		9 	mm
+E1/2 max 		71 	mm
+	Weight 	4,47 	kg/m
+Dimensions (rail in production length)
+L 	Total length 	4.000 +20 	mm
+E1 		20 ±0,5 	mm
+E2 		60 +20 	mm

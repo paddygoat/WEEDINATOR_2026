@@ -1,0 +1,25 @@
+Dimensions
+H 	Total height 	42 	mm
+H1 		6 	mm
+N 		16 	mm
+W 	Block width 	60 	mm
+B 		40 	mm
+B1 		10 	mm
+C 		40 	mm
+L1 		70 	mm
+L 	Block length 	97,4 	mm
+K1 		20,25 	mm
+K2 		6 	mm
+G 		12 	mm
+M 		M8 	
+l 		10 	mm
+T 		8,5 	mm
+H2 		6,5 	mm
+H3 		10,8 	mm
+	Mass 	0,78 	kg
+Load ratings and torques
+Cdyn 	Dynamic load rating 	48.500 	N
+C0 	Static load rating 	71.870 	N
+M0X 	Static moment 	660 	Nm
+M0Y 	Static moment 	700 	Nm
+M0Z 	Static moment 	700 	Nm
